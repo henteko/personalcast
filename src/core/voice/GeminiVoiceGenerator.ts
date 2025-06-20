@@ -48,11 +48,11 @@ export class GeminiVoiceGenerator {
 
     // Prepare dialogues for multi-speaker synthesis
     const multiSpeakerDialogues = dialogues.map((dialogue) => {
-      // Use appropriate Gemini voices for each personality
+      // Use voice names from config for each personality
       const geminiVoiceName =
         dialogue.personality === personalities.host1.name
-          ? 'Kore' // Female voice for Akari
-          : 'Puck'; // Male voice for Kenta
+          ? personalities.host1.voiceName
+          : personalities.host2.voiceName
 
       return {
         speakerName: dialogue.personality,
@@ -105,11 +105,11 @@ export class GeminiVoiceGenerator {
     const personalities = config.get().personalities;
     const audioSpeed = config.get().audio.speed;
 
-    // Use appropriate Gemini voices for each personality
+    // Use voice names from config for each personality
     const geminiVoiceName =
       dialogue.personality === personalities.host1.name
-        ? 'Zephyr' // Female voice for Akari
-        : 'Sadaltager'; // Male voice for Kenta
+        ? personalities.host1.voiceName
+        : personalities.host2.voiceName
 
     const mergedConfig = voiceConfig ?? this.defaultVoiceConfig;
 
