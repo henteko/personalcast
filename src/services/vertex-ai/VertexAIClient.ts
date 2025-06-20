@@ -86,8 +86,8 @@ export class VertexAIClient {
         if (error.message.includes('Permission') && error.message.includes('denied')) {
           throw new Error(
             `Vertex AI 権限エラー: サービスアカウントに「Vertex AI ユーザー」ロールを付与してください。\n` +
-            `また、プロジェクトでVertex AI APIが有効になっていることを確認してください。\n` +
-            `詳細: ${error.message}`
+              `また、プロジェクトでVertex AI APIが有効になっていることを確認してください。\n` +
+              `詳細: ${error.message}`,
           );
         }
         throw new Error(`Vertex AI error: ${error.message}`);

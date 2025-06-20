@@ -1,6 +1,7 @@
 import { MemoParser } from '../../core/parser';
 import { ScriptGenerator } from '../../core/generator';
 import { VoiceGenerator } from '../../core/voice';
+import { GeminiVoiceGenerator } from '../../core/voice/GeminiVoiceGenerator';
 import { AudioMixer } from '../../core/mixer';
 import { ProgressReporter } from '../../utils';
 import { PraiseStyle } from '../../types';
@@ -72,7 +73,14 @@ export async function generateCommand(options: GenerateOptions): Promise<void> {
 
     // Step 3: Generate voice
     progress.update('音声を生成中...');
-    const voiceGenerator = new VoiceGenerator();
+    const useGeminiTTS = !!process.env.GEMINI_API_KEY;
+    progress.info(`音声エンジン: ${useGeminiTTS ? 'Gemini 2.5 Flash TTS' : 'Google Cloud TTS'}`);
+
+    const voiceGenerator = useGeminiTTS
+      ? new GeminiVoiceGenerator({
+          apiKey: process.env.GEMINI_API_KEY,
+        })
+      : new VoiceGenerator();
     const audioBuffers = await voiceGenerator.generateSpeech(script);
     progress.info(`${audioBuffers.length}個の音声クリップを生成しました`);
 

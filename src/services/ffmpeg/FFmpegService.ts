@@ -42,10 +42,37 @@ export class FFmpegService {
       throw new Error('No audio buffers to concatenate');
     }
 
-    // If only one buffer, just save it directly
+    // If only one buffer, convert from PCM to MP3
     if (audioBuffers.length === 1) {
-      await fs.writeFile(options.outputPath, audioBuffers[0].data);
-      return options.outputPath;
+      const tempPath = path.join(this.tempDir, `pcm_${Date.now()}.raw`);
+      await fs.writeFile(tempPath, audioBuffers[0].data);
+
+      try {
+        await new Promise<void>((resolve, reject) => {
+          ffmpeg()
+            .input(tempPath)
+            .inputOptions([
+              '-f',
+              's16le', // 16-bit signed little-endian PCM
+              '-ar',
+              '24000', // Sample rate 24kHz
+              '-ac',
+              '1', // Mono audio
+            ])
+            .audioCodec('libmp3lame')
+            .audioBitrate('192k')
+            .output(options.outputPath)
+            .on('end', () => resolve())
+            .on('error', (err: Error) => reject(err))
+            .run();
+        });
+
+        await this.cleanupTempFiles([tempPath]);
+        return options.outputPath;
+      } catch (error) {
+        await this.cleanupTempFiles([tempPath]);
+        throw new Error(`Failed to convert PCM to MP3: ${String(error)}`);
+      }
     }
 
     // Save audio buffers as temporary files with unique names
@@ -53,9 +80,32 @@ export class FFmpegService {
     const timestamp = Date.now();
 
     for (let i = 0; i < audioBuffers.length; i++) {
-      const tempPath = path.join(this.tempDir, `audio_${timestamp}_${i}.mp3`);
-      await fs.writeFile(tempPath, audioBuffers[i].data);
-      tempFiles.push(tempPath);
+      const pcmPath = path.join(this.tempDir, `pcm_${timestamp}_${i}.raw`);
+      const mp3Path = path.join(this.tempDir, `audio_${timestamp}_${i}.mp3`);
+      await fs.writeFile(pcmPath, audioBuffers[i].data);
+
+      // Convert PCM to MP3
+      await new Promise<void>((resolve, reject) => {
+        ffmpeg()
+          .input(pcmPath)
+          .inputOptions([
+            '-f',
+            's16le', // 16-bit signed little-endian PCM
+            '-ar',
+            '24000', // Sample rate 24kHz
+            '-ac',
+            '1', // Mono audio
+          ])
+          .audioCodec('libmp3lame')
+          .audioBitrate('192k')
+          .output(mp3Path)
+          .on('end', () => resolve())
+          .on('error', (err: Error) => reject(err))
+          .run();
+      });
+
+      await this.cleanupTempFiles([pcmPath]);
+      tempFiles.push(mp3Path);
     }
 
     // Create concat list file with proper formatting
