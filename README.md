@@ -52,7 +52,7 @@ Windows:
 
 ```bash
 # 1. リポジトリのクローン
-git clone https://github.com/yourusername/cheercast.git
+git clone https://github.com/henteko/cheercast.git
 cd cheercast
 
 # 2. 依存関係のインストール
