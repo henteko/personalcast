@@ -43,7 +43,7 @@ module.exports = [
       '@typescript-eslint/prefer-nullish-coalescing': 'error',
       '@typescript-eslint/prefer-optional-chain': 'error',
       '@typescript-eslint/unbound-method': ['error', { ignoreStatic: true }],
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'no-console': ['off'],
       'prettier/prettier': 'error',
     },
   },
