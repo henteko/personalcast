@@ -21,7 +21,6 @@ const DEFAULT_CONFIG = {
   },
   audio: {
     duration: 10,
-    bgm: true,
     speed: 1.0,
   },
   gemini: {
@@ -68,15 +67,12 @@ export async function initCommand(): Promise<void> {
 
     // Create .env.example if it doesn't exist
     const envExamplePath = path.join(process.cwd(), '.env.example');
-    const envContent = `# Google Cloud設定
-GOOGLE_CLOUD_PROJECT_ID=your-project-id
-GOOGLE_CLOUD_KEYFILE=path/to/keyfile.json
-GOOGLE_CLOUD_LOCATION=asia-northeast1
+    const envContent = `# Gemini API設定（必須）
+GEMINI_API_KEY=your-gemini-api-key
 
 # オプション設定
 DEFAULT_DURATION=10
-DEFAULT_STYLE=gentle
-BGM_ENABLED=true`;
+DEFAULT_STYLE=gentle`;
 
     await fs.writeFile(envExamplePath, envContent);
     console.log('✅ .env.example を作成しました');
@@ -103,9 +99,10 @@ BGM_ENABLED=true`;
 
     console.log();
     console.log('📋 次のステップ:');
-    console.log('1. .env ファイルを作成し、APIキーを設定してください');
+    console.log('1. .env ファイルを作成し、Gemini APIキーを設定してください');
     console.log('   cp .env.example .env');
-    console.log('2. Google Cloud のサービスアカウントキーを取得してください');
+    console.log('2. Gemini APIキーを取得してください');
+    console.log('   https://aistudio.google.com/app/apikey');
     console.log('3. cheercast generate -i sample_memo.txt でテスト実行できます');
     console.log();
     console.log('詳細は README.md をご覧ください。');

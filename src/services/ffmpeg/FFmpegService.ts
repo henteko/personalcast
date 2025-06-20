@@ -10,8 +10,6 @@ export interface ConcatOptions {
 
 export interface MixOptions {
   outputPath: string;
-  bgmPath?: string;
-  bgmVolume?: number;
   format?: string;
 }
 
@@ -140,41 +138,6 @@ export class FFmpegService {
       // Cleanup on error
       await this.cleanupTempFiles([...tempFiles, listPath]);
       throw new Error(`Failed to concatenate audio: ${String(error)}`);
-    }
-  }
-
-  async mixWithBGM(audioPath: string, options: MixOptions): Promise<string> {
-    if (!options.bgmPath) {
-      // No BGM, just copy the file
-      await fs.copyFile(audioPath, options.outputPath);
-      return options.outputPath;
-    }
-
-    const bgmVolume = options.bgmVolume ?? 0.1; // Default BGM volume at 10%
-
-    try {
-      await new Promise<void>((resolve, reject) => {
-        const command = ffmpeg()
-          .input(audioPath)
-          .input(options.bgmPath!)
-          .complexFilter([
-            `[1:a]volume=${bgmVolume}[bgm]`, // Adjust BGM volume
-            '[0:a][bgm]amix=inputs=2:duration=first:dropout_transition=2[out]', // Mix audio
-          ])
-          .outputOptions(['-map', '[out]'])
-          .audioCodec('libmp3lame')
-          .audioBitrate('192k')
-          .output(options.outputPath);
-
-        command
-          .on('end', () => resolve())
-          .on('error', (err: Error) => reject(err))
-          .run();
-      });
-
-      return options.outputPath;
-    } catch (error) {
-      throw new Error(`Failed to mix audio with BGM: ${String(error)}`);
     }
   }
 

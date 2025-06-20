@@ -50,61 +50,6 @@ describe('AudioMixer', () => {
     });
   });
 
-  describe('addBackgroundMusic', () => {
-    it('should add background music to audio', async () => {
-      const mainAudio = Buffer.from('main audio');
-      const bgmPath = '/path/to/bgm.mp3';
-      const mockOutputPath = '/tmp/with_bgm.mp3';
-
-      mockFFmpegService.mixWithBGM.mockResolvedValue(mockOutputPath);
-      mockFs.readFile.mockResolvedValue(Buffer.from('audio with bgm'));
-
-      const result = await mixer.addBackgroundMusic(mainAudio, bgmPath);
-
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockFFmpegService.mixWithBGM).toHaveBeenCalled();
-      expect(result).toEqual(Buffer.from('audio with bgm'));
-    });
-
-    it('should use default BGM volume if not specified', async () => {
-      const mainAudio = Buffer.from('main audio');
-      const bgmPath = '/path/to/bgm.mp3';
-
-      mockFFmpegService.mixWithBGM.mockResolvedValue('/tmp/output.mp3');
-      mockFs.readFile.mockResolvedValue(Buffer.from('result'));
-
-      await mixer.addBackgroundMusic(mainAudio, bgmPath);
-
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockFFmpegService.mixWithBGM).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          bgmPath,
-          bgmVolume: 0.15, // Default volume
-        }),
-      );
-    });
-
-    it('should allow custom BGM volume', async () => {
-      const mainAudio = Buffer.from('main audio');
-      const bgmPath = '/path/to/bgm.mp3';
-      const customVolume = 0.3;
-
-      mockFFmpegService.mixWithBGM.mockResolvedValue('/tmp/output.mp3');
-      mockFs.readFile.mockResolvedValue(Buffer.from('result'));
-
-      await mixer.addBackgroundMusic(mainAudio, bgmPath, customVolume);
-
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockFFmpegService.mixWithBGM).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          bgmVolume: customVolume,
-        }),
-      );
-    });
-  });
-
   describe('normalizeVolume', () => {
     it('should normalize audio volume', async () => {
       const audio = Buffer.from('audio data');

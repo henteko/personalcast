@@ -98,7 +98,5 @@ export interface GenerationOptions {
   type?: 'daily' | 'weekly';
   style?: 'gentle' | 'energetic';
   duration?: number;
-  enableBGM?: boolean;
-  bgmVolume?: number;
   voiceSpeed?: number;
 }

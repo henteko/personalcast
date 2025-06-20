@@ -9,7 +9,6 @@ import {
   validateProgramType,
   validatePraiseStyle,
   validateDuration,
-  validateBGMVolume,
   validateOutputPath,
   validateEnvironmentVariables,
 } from '../../utils/validation';
@@ -20,8 +19,6 @@ interface GenerateOptions {
   type: string;
   style: string;
   duration: string;
-  bgm: boolean;
-  bgmVolume: string;
 }
 
 export async function generateCommand(options: GenerateOptions): Promise<void> {
@@ -38,7 +35,6 @@ export async function generateCommand(options: GenerateOptions): Promise<void> {
     validateProgramType(options.type),
     validatePraiseStyle(options.style),
     validateDuration(options.duration),
-    options.bgm ? validateBGMVolume(options.bgmVolume) : { valid: true },
     await validateOutputPath(options.output),
   ];
 
@@ -48,7 +44,7 @@ export async function generateCommand(options: GenerateOptions): Promise<void> {
     process.exit(1);
   }
 
-  const progress = new ProgressReporter(6);
+  const progress = new ProgressReporter(5);
 
   try {
     progress.start('CheerCast ラジオ番組生成を開始します...');
@@ -83,24 +79,9 @@ export async function generateCommand(options: GenerateOptions): Promise<void> {
     // Step 4: Combine audio
     progress.update('音声を結合中...');
     const mixer = new AudioMixer();
-    let combinedAudio = await mixer.combineAudio(audioBuffers);
+    const combinedAudio = await mixer.combineAudio(audioBuffers);
 
-    // Step 5: Add BGM if enabled
-    if (options.bgm) {
-      progress.update('BGMを追加中...');
-      const bgmPath = await findBGMFile();
-      if (bgmPath) {
-        combinedAudio = await mixer.addBackgroundMusic(
-          combinedAudio,
-          bgmPath,
-          parseFloat(options.bgmVolume),
-        );
-      } else {
-        progress.info('BGMファイルが見つかりません。BGMなしで続行します。');
-      }
-    }
-
-    // Step 6: Normalize and export
+    // Step 5: Normalize and export
     progress.update('音声を正規化してエクスポート中...');
     const normalizedAudio = await mixer.normalizeVolume(combinedAudio);
     await mixer.exportToMP3(normalizedAudio, options.output);
@@ -110,10 +91,4 @@ export async function generateCommand(options: GenerateOptions): Promise<void> {
     progress.error(error instanceof Error ? error.message : '不明なエラーが発生しました');
     process.exit(1);
   }
-}
-
-function findBGMFile(): Promise<string | null> {
-  // TODO: Implement BGM file search logic
-  // For now, return null
-  return Promise.resolve(null);
 }

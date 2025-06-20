@@ -27,8 +27,6 @@ program
   .option('-t, --type <type>', '番組タイプ (daily|weekly)', 'daily')
   .option('-s, --style <style>', '褒めスタイル (gentle|energetic)', 'gentle')
   .option('-d, --duration <minutes>', '番組の長さ（分）', '10')
-  .option('--no-bgm', 'BGMを無効にする')
-  .option('--bgm-volume <volume>', 'BGM音量 (0.0-1.0)', '0.15')
   .action(generateCommand);
 
 // Preview command

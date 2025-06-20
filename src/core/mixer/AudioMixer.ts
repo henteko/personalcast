@@ -40,37 +40,6 @@ export class AudioMixer {
     }
   }
 
-  async addBackgroundMusic(audio: Buffer, bgmPath: string, bgmVolume = 0.15): Promise<Buffer> {
-    const inputPath = path.join(this.tempDir, `input_${Date.now()}.mp3`);
-    const outputPath = path.join(this.tempDir, `with_bgm_${Date.now()}.mp3`);
-
-    try {
-      // Write input audio to temp file
-      await fs.writeFile(inputPath, audio);
-
-      await this.ffmpegService.mixWithBGM(inputPath, {
-        outputPath,
-        bgmPath,
-        bgmVolume,
-        format: 'mp3',
-      });
-
-      const result = await fs.readFile(outputPath);
-
-      // Cleanup temp files
-      await this.cleanupFile(inputPath);
-      await this.cleanupFile(outputPath);
-
-      return result;
-    } catch (error) {
-      await this.cleanupFile(inputPath);
-      await this.cleanupFile(outputPath);
-      throw new Error(
-        `Failed to add background music: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
-    }
-  }
-
   async normalizeVolume(audio: Buffer, targetLoudness = -16): Promise<Buffer> {
     const inputPath = path.join(this.tempDir, `input_${Date.now()}.mp3`);
     const outputPath = path.join(this.tempDir, `normalized_${Date.now()}.mp3`);

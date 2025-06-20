@@ -3,7 +3,6 @@ import { ScriptGenerator } from './core/generator/ScriptGenerator';
 import { GeminiVoiceGenerator } from './core/voice/GeminiVoiceGenerator';
 import { AudioMixer } from './core/mixer/AudioMixer';
 import { ParsedMemo, RadioScript, GenerationOptions, PraiseStyle } from './types';
-import { findBGMFile } from './utils';
 
 export class CheerCast {
   private memoParser: MemoParser;
@@ -50,18 +49,6 @@ export class CheerCast {
       // Combine audio
       let finalAudio = await this.audioMixer.combineAudio(audioBuffers);
 
-      // Add BGM if enabled
-      if (options.enableBGM) {
-        const bgmPath = await findBGMFile();
-        if (bgmPath) {
-          finalAudio = await this.audioMixer.addBackgroundMusic(
-            finalAudio,
-            bgmPath,
-            options.bgmVolume,
-          );
-        }
-      }
-
       // Normalize volume
       finalAudio = await this.audioMixer.normalizeVolume(finalAudio);
 
@@ -96,18 +83,6 @@ export class CheerCast {
 
       // Combine audio
       let finalAudio = await this.audioMixer.combineAudio(audioBuffers);
-
-      // Add BGM if enabled
-      if (options.enableBGM) {
-        const bgmPath = await findBGMFile();
-        if (bgmPath) {
-          finalAudio = await this.audioMixer.addBackgroundMusic(
-            finalAudio,
-            bgmPath,
-            options.bgmVolume,
-          );
-        }
-      }
 
       // Normalize volume
       finalAudio = await this.audioMixer.normalizeVolume(finalAudio);

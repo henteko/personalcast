@@ -5,18 +5,10 @@ import { CheerCast } from '../../CheerCast';
 import { ScriptGenerator } from '../../core/generator/ScriptGenerator';
 import { GeminiVoiceGenerator } from '../../core/voice/GeminiVoiceGenerator';
 import { AudioMixer } from '../../core/mixer/AudioMixer';
-import * as utils from '../../utils';
 
 jest.mock('../../core/generator/ScriptGenerator');
 jest.mock('../../core/voice/GeminiVoiceGenerator');
 jest.mock('../../core/mixer/AudioMixer');
-jest.mock('../../utils', () => {
-  const actualUtils = jest.requireActual('../../utils');
-  return {
-    ...(actualUtils as object),
-    findBGMFile: jest.fn(),
-  };
-});
 
 describe('CheerCast Integration Tests', () => {
   let cheerCast: CheerCast;
@@ -99,7 +91,6 @@ describe('CheerCast Integration Tests', () => {
       await cheerCast.generateFromFile(memoPath, {
         outputPath,
         style: 'gentle',
-        enableBGM: false,
       });
 
       // Verify the workflow
@@ -182,49 +173,6 @@ describe('CheerCast Integration Tests', () => {
           ]),
         }),
         expect.objectContaining({ style: 'energetic' }),
-      );
-    });
-
-    it('should handle BGM addition when enabled', async () => {
-      // Create test memo
-      const memoPath = path.join(tempDir, 'memo.txt');
-      await fs.writeFile(memoPath, '2024-01-20\n\n今日も一日頑張った！');
-
-      // Mock findBGMFile to return a BGM path
-      const mockFindBGMFile = utils.findBGMFile as jest.MockedFunction<typeof utils.findBGMFile>;
-      mockFindBGMFile.mockResolvedValue('/path/to/bgm.mp3');
-
-      // Mock responses
-      mockScriptGenerator.generateScript.mockResolvedValue({
-        title: 'BGMテスト',
-        date: new Date(),
-        dialogues: [{ personality: 'あかり', content: 'BGMと一緒に！' }],
-      });
-
-      mockVoiceGenerator.generateSpeech.mockResolvedValue([
-        { data: Buffer.from('voice'), duration: 2.0 },
-      ]);
-
-      const mockVoiceOnly = Buffer.from('voice only');
-      const mockWithBGM = Buffer.from('voice with bgm');
-      mockAudioMixer.combineAudio.mockResolvedValue(mockVoiceOnly);
-      mockAudioMixer.addBackgroundMusic.mockResolvedValue(mockWithBGM);
-      mockAudioMixer.normalizeVolume.mockResolvedValue(mockWithBGM);
-
-      // Generate with BGM
-      const outputPath = path.join(tempDir, 'with_bgm.mp3');
-      await cheerCast.generateFromFile(memoPath, {
-        outputPath,
-        enableBGM: true,
-        bgmVolume: 0.2,
-      });
-
-      // Verify BGM was added
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockAudioMixer.addBackgroundMusic).toHaveBeenCalledWith(
-        mockVoiceOnly,
-        '/path/to/bgm.mp3',
-        0.2,
       );
     });
   });

@@ -84,26 +84,6 @@ export function validateDuration(duration: string): ValidationResult {
   return { valid: true };
 }
 
-export function validateBGMVolume(volume: string): ValidationResult {
-  const volumeNum = parseFloat(volume);
-
-  if (isNaN(volumeNum)) {
-    return {
-      valid: false,
-      error: 'BGM volume must be a number',
-    };
-  }
-
-  if (volumeNum < 0 || volumeNum > 1) {
-    return {
-      valid: false,
-      error: 'BGM volume must be between 0.0 and 1.0',
-    };
-  }
-
-  return { valid: true };
-}
-
 export async function validateOutputPath(outputPath: string): Promise<ValidationResult> {
   const dir = path.dirname(outputPath);
   const ext = path.extname(outputPath).toLowerCase();

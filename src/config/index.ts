@@ -27,7 +27,6 @@ export interface AppConfig {
   };
   audio: {
     duration: number;
-    bgm: boolean;
     speed: number;
   };
 }
@@ -71,7 +70,6 @@ class Config {
       },
       audio: {
         duration: 10,
-        bgm: true,
         speed: 1.0,
       },
     };
