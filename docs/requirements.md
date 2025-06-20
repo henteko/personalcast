@@ -26,7 +26,7 @@
 - **言語**: TypeScript
 - **ランタイム**: Node.js 18+
 - **CLI框架**: Commander.js
-- **AI台本生成**: Google Gemini API (gemini-1.5-pro)
+- **AI台本生成**: Google Gemini API (gemini-2.5-flash)
 - **音声生成**: Google Cloud Text-to-Speech API
 - **音声編集**: FFmpeg (fluent-ffmpeg)
 - **設定管理**: YAML (js-yaml)
@@ -157,7 +157,7 @@ audio:
   speed: 1.0
 
 gemini:
-  model: "gemini-1.5-pro"
+  model: "gemini-2.5-flash"
   temperature: 0.7
 ```
 
