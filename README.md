@@ -43,19 +43,34 @@ Windows:
 
 ## 🚀 インストール
 
+### 必要な環境
+- Node.js 18以上
+- npm 8以上
+- FFmpeg（音声処理に必要）
+
+### インストール手順
+
 ```bash
-# リポジトリのクローン
+# 1. リポジトリのクローン
 git clone https://github.com/yourusername/cheercast.git
 cd cheercast
 
-# 依存関係のインストール
+# 2. 依存関係のインストール
 npm install
 
-# ビルド
+# 3. ビルド
 npm run build
 
-# CLIとして実行可能にする
+# 4. CLIとして実行可能にする（グローバルインストール）
 npm link
+```
+
+インストール後、ターミナルで `cheercast` コマンドが使用できるようになります。
+
+```bash
+# 動作確認
+cheercast --version
+cheercast --help
 ```
 
 ## 🔧 セットアップ
