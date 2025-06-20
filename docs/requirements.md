@@ -101,12 +101,11 @@ interface VoiceGenerator {
 - けんた: ja-JP-Wavenet-C (男性、明るい声)
 
 #### 4. 音声合成機能
-**概要**: 複数の音声を結合し、BGMを追加
+**概要**: 複数の音声を結合し、最適な音量に調整
 
 ```typescript
 interface AudioMixer {
   combineAudio(audioBuffers: Buffer[]): Promise<Buffer>
-  addBackgroundMusic(audio: Buffer, bgmPath: string): Promise<Buffer>
   normalizeVolume(audio: Buffer): Buffer
   exportToMP3(audio: Buffer, outputPath: string): Promise<void>
 }
@@ -155,7 +154,6 @@ praise:
   
 audio:
   duration: 10
-  bgm: true
   speed: 1.0
 
 gemini:

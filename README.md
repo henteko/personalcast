@@ -11,8 +11,6 @@ CheerCastは、日記やライフログから、AIが2人のパーソナリテ�
 - 📝 様々な形式のメモファイルに対応（.txt, .md, .json, .csv）
 - 🤖 Google Gemini APIによる自然な対話台本生成
 - 🎙️ Gemini 2.5 Flash Preview TTSによる高品質な音声合成
-- 🔊 Google Cloud Text-to-Speech（オプション）にも対応
-- 🎵 BGM付きの本格的なラジオ番組形式
 - ⚡ シンプルなCLIインターフェース
 - 🔄 自動リトライ機能付きのAPI呼び出し
 - ✅ 入力検証とエラーハンドリング
@@ -24,7 +22,6 @@ CheerCastは、日記やライフログから、AIが2人のパーソナリテ�
 - npm 8以上
 - FFmpeg（システムにインストール済み）
 - Google Gemini API キー
-- Google Cloud Platform アカウント（Google Cloud TTSを使用する場合のみ）
 
 ### FFmpegのインストール
 
@@ -81,16 +78,7 @@ cheercast --help
 1. [Google AI Studio](https://aistudio.google.com/apikey) でAPIキーを取得
 2. 取得したAPIキーを環境変数に設定
 
-### 2. Google Cloud Platform の設定（オプション）
-
-Google Cloud TTSを使用する場合のみ必要：
-
-1. [Google Cloud Console](https://console.cloud.google.com/) でプロジェクトを作成
-2. Cloud Text-to-Speech APIを有効化
-3. サービスアカウントを作成し、Cloud Text-to-Speech ユーザーロールを付与
-4. サービスアカウントのキーファイル（JSON）をダウンロード
-
-### 3. 環境変数の設定
+### 2. 環境変数の設定
 
 ```bash
 cp .env.example .env
@@ -102,18 +90,12 @@ cp .env.example .env
 # Gemini API設定（必須）
 GEMINI_API_KEY=your-gemini-api-key
 
-# Google Cloud TTS設定（オプション）
-# GOOGLE_CLOUD_PROJECT_ID=your-project-id
-# GOOGLE_CLOUD_KEYFILE=path/to/keyfile.json
-# GOOGLE_CLOUD_LOCATION=asia-northeast1
-
 # オプション設定
 DEFAULT_DURATION=10
 DEFAULT_STYLE=gentle
-BGM_ENABLED=true
 ```
 
-### 4. 初期設定
+### 3. 初期設定
 
 ```bash
 cheercast init
@@ -138,9 +120,6 @@ cheercast generate -i ./memos -o weekly.mp3 -t weekly
 # プレビューモード（台本のみ生成）
 cheercast preview -i memo.txt
 
-# BGMなしで生成
-cheercast generate -i memo.txt --no-bgm
-
 # エネルギッシュなスタイルで生成
 cheercast generate -i memo.txt -s energetic
 
@@ -162,8 +141,6 @@ cheercast generate [options]
 | `-t, --type <type>` | 番組タイプ (`daily` または `weekly`) | `daily` |
 | `-s, --style <style>` | 褒めスタイル (`gentle` または `energetic`) | `gentle` |
 | `-d, --duration <minutes>` | 番組の長さ（1-60分） | `10` |
-| `--no-bgm` | BGMを無効にする | false |
-| `--bgm-volume <volume>` | BGM音量 (0.0-1.0) | `0.15` |
 
 #### preview コマンド
 ```bash
@@ -289,8 +266,7 @@ cheercast/
 │   │   ├── voice/           # 音声合成
 │   │   └── mixer/           # 音声ミキシング
 │   ├── services/            # 外部サービス統合
-│   │   ├── gemini/          # Google Gemini API
-│   │   ├── gcp-tts/         # Google Cloud TTS
+│   │   ├── gemini-api/      # Google Gemini API
 │   │   └── ffmpeg/          # FFmpeg処理
 │   ├── utils/               # ユーティリティ関数
 │   │   ├── validation.ts    # 入力検証
@@ -310,27 +286,29 @@ cheercast/
 
 ```json
 {
-  "personas": {
-    "main": {
+  "personalities": {
+    "host1": {
       "name": "あかり",
-      "voiceId": "ja-JP-Neural2-B",
-      "personality": "明るく元気な女性。聞き手を励まし、小さな成果も見逃さない。"
+      "voiceName": "Kore",
+      "character": "優しくて励まし上手"
     },
-    "sub": {
+    "host2": {
       "name": "けんた",
-      "voiceId": "ja-JP-Neural2-C",
-      "personality": "落ち着いた男性。的確なアドバイスと温かい励ましを提供。"
+      "voiceName": "Puck",
+      "character": "明るくて分析好き"
     }
   },
-  "radioConfig": {
+  "praise": {
     "style": "gentle",
-    "openingMessage": "今日も一日お疲れ様でした！",
-    "closingMessage": "明日も素敵な一日になりますように！"
+    "focusAreas": ["work", "learning", "health"]
   },
   "audio": {
-    "defaultDuration": 10,
-    "bgmVolume": 0.15,
-    "voiceSpeed": 1.0
+    "duration": 10,
+    "speed": 1.0
+  },
+  "gemini": {
+    "model": "gemini-1.5-pro",
+    "temperature": 0.7
   }
 }
 ```
@@ -348,24 +326,13 @@ brew install ffmpeg
 which ffmpeg
 ```
 
-#### Google Cloud認証エラー
-```bash
-# 認証情報が正しく設定されているか確認
-echo $GOOGLE_CLOUD_KEYFILE
-
-# ファイルの存在確認
-ls -la $GOOGLE_CLOUD_KEYFILE
-```
-
-#### Vertex AI APIエラー
-- プロジェクトIDが正しいか確認
-- Vertex AI APIが有効化されているか確認
-- サービスアカウントに適切な権限があるか確認
+#### Gemini APIエラー
+- APIキーが正しく設定されているか確認
+- APIキーの有効性を確認
 - ネットワーク接続を確認
 
 #### 音声生成が遅い
 - `--duration` オプションで短い番組を生成してテスト
-- BGMを無効化（`--no-bgm`）して処理時間を短縮
 
 ### デバッグモード
 
