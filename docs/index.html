@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CheerCast 🎙️ - AIがあなたの頑張りを全力で褒めちぎる！</title>
+    
+    <!-- OGP Meta Tags -->
+    <meta property="og:title" content="CheerCast - AIがあなたの頑張りを全力で褒めちぎる！">
+    <meta property="og:description" content="毎日のメモから2人のAIパーソナリティが楽しいラジオ番組を自動生成！今日も頑張ったあなたを応援します🎉">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://yourusername.github.io/cheercast/">
+    <meta property="og:image" content="https://yourusername.github.io/cheercast/ogp-image.png">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="CheerCast 🎙️">
+    <meta name="twitter:description" content="AIがあなたの頑張りを全力で褒めちぎる！">
+    <meta name="twitter:image" content="https://yourusername.github.io/cheercast/ogp-image.png">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: #fff5f5;
+            overflow-x: hidden;
+        }
+        
+        /* アニメーション */
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+        
+        @keyframes sparkle {
+            0%, 100% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+        
+        @keyframes wave {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(20deg); }
+            75% { transform: rotate(-20deg); }
+        }
+        
+        /* ヒーローセクション */
+        .hero {
+            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 50%, #48dbfb 100%);
+            color: white;
+            padding: 100px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2"/></svg>');
+            background-size: 100px 100px;
+            animation: float 20s infinite ease-in-out;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .hero-emoji {
+            font-size: 100px;
+            animation: bounce 2s infinite;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            font-weight: 900;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .hero-subtitle {
+            font-size: 24px;
+            margin-bottom: 40px;
+            font-weight: 300;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn-hero {
+            display: inline-block;
+            padding: 18px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 50px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-hero-primary {
+            background: white;
+            color: #ff6b6b;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-hero-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .btn-hero-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+        }
+        
+        .btn-hero-secondary:hover {
+            background: white;
+            color: #ff6b6b;
+        }
+        
+        /* キャッチコピー */
+        .catchcopy {
+            background: white;
+            padding: 80px 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .catchcopy h2 {
+            font-size: 36px;
+            color: #ff6b6b;
+            margin-bottom: 30px;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .catchcopy h2::after {
+            content: '✨';
+            position: absolute;
+            top: -10px;
+            right: -30px;
+            font-size: 24px;
+            animation: sparkle 2s infinite;
+        }
+        
+        .catchcopy-text {
+            font-size: 20px;
+            color: #666;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+        
+        .highlight {
+            background: linear-gradient(transparent 60%, #feca57 60%);
+            padding: 0 4px;
+            font-weight: bold;
+        }
+        
+        /* キャラクター紹介 */
+        .characters {
+            background: #fff0f5;
+            padding: 80px 20px;
+            text-align: center;
+        }
+        
+        .characters h2 {
+            font-size: 36px;
+            color: #ff6b6b;
+            margin-bottom: 50px;
+        }
+        
+        .character-cards {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            flex-wrap: wrap;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .character-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(255,107,107,0.1);
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+            transition: transform 0.3s;
+        }
+        
+        .character-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(255,107,107,0.2);
+        }
+        
+        .character-emoji {
+            font-size: 80px;
+            margin-bottom: 20px;
+            display: inline-block;
+            animation: wave 2s infinite;
+        }
+        
+        .character-name {
+            font-size: 28px;
+            color: #ff6b6b;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .character-description {
+            color: #666;
+            font-size: 16px;
+        }
+        
+        /* 特徴セクション */
+        .features {
+            background: white;
+            padding: 80px 20px;
+        }
+        
+        .features h2 {
+            font-size: 36px;
+            text-align: center;
+            color: #ff6b6b;
+            margin-bottom: 50px;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .feature-card {
+            background: linear-gradient(135deg, #fff 0%, #fff5f5 100%);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            border: 2px solid #ffe0e0;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: #ff6b6b;
+            box-shadow: 0 10px 30px rgba(255,107,107,0.1);
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,107,107,0.1) 0%, transparent 70%);
+            transform: scale(0);
+            transition: transform 0.5s;
+        }
+        
+        .feature-card:hover::before {
+            transform: scale(2);
+        }
+        
+        .feature-emoji {
+            font-size: 60px;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        
+        .feature-title {
+            font-size: 24px;
+            color: #ff6b6b;
+            margin-bottom: 15px;
+            font-weight: bold;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .feature-description {
+            color: #666;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* 使い方セクション */
+        .how-to {
+            background: #fafafa;
+            padding: 80px 20px;
+        }
+        
+        .how-to h2 {
+            font-size: 36px;
+            text-align: center;
+            color: #ff6b6b;
+            margin-bottom: 50px;
+        }
+        
+        .steps-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 40px;
+            gap: 40px;
+        }
+        
+        .step:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+        
+        .step-number {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #ff6b6b, #feca57);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: bold;
+            color: white;
+            flex-shrink: 0;
+            box-shadow: 0 5px 15px rgba(255,107,107,0.3);
+        }
+        
+        .step-content {
+            flex: 1;
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+        
+        .step-title {
+            font-size: 24px;
+            color: #ff6b6b;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .step-description {
+            color: #666;
+        }
+        
+        .step-code {
+            background: #2d3748;
+            color: #68d391;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        
+        /* サンプル出力 */
+        .sample {
+            background: white;
+            padding: 80px 20px;
+        }
+        
+        .sample h2 {
+            font-size: 36px;
+            text-align: center;
+            color: #ff6b6b;
+            margin-bottom: 50px;
+        }
+        
+        .radio-show {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fafafa;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .radio-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .radio-title {
+            font-size: 24px;
+            color: #ff6b6b;
+            margin-bottom: 10px;
+        }
+        
+        .radio-date {
+            color: #999;
+        }
+        
+        .dialogue {
+            margin: 20px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+        }
+        
+        .dialogue:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+        
+        .speaker-icon {
+            font-size: 40px;
+            flex-shrink: 0;
+        }
+        
+        .dialogue-content {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            flex: 1;
+            position: relative;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        }
+        
+        .dialogue:nth-child(odd) .dialogue-content::before {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: 20px;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 10px 10px 10px 0;
+            border-color: transparent white transparent transparent;
+        }
+        
+        .dialogue:nth-child(even) .dialogue-content::before {
+            content: '';
+            position: absolute;
+            right: -10px;
+            top: 20px;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 10px 0 10px 10px;
+            border-color: transparent transparent transparent white;
+        }
+        
+        .speaker-name {
+            font-weight: bold;
+            color: #ff6b6b;
+            margin-bottom: 5px;
+        }
+        
+        /* CTA */
+        .cta {
+            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+            padding: 100px 20px;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cta::before {
+            content: '🎉';
+            position: absolute;
+            top: 20px;
+            left: 10%;
+            font-size: 60px;
+            opacity: 0.3;
+            animation: float 3s infinite;
+        }
+        
+        .cta::after {
+            content: '🎊';
+            position: absolute;
+            bottom: 20px;
+            right: 10%;
+            font-size: 60px;
+            opacity: 0.3;
+            animation: float 3s infinite reverse;
+        }
+        
+        .cta h2 {
+            font-size: 40px;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .cta-text {
+            font-size: 20px;
+            margin-bottom: 40px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* フッター */
+        footer {
+            background: #2d3748;
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        
+        footer a {
+            color: #feca57;
+            text-decoration: none;
+        }
+        
+        footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 36px;
+            }
+            
+            .hero-subtitle {
+                font-size: 20px;
+            }
+            
+            .step {
+                flex-direction: column !important;
+            }
+            
+            .dialogue {
+                flex-direction: column !important;
+            }
+            
+            .dialogue-content::before {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-emoji">🎙️</div>
+            <h1>CheerCast</h1>
+            <p class="hero-subtitle">AIがあなたの頑張りを全力で褒めちぎる！</p>
+            <div class="hero-buttons">
+                <a href="https://github.com/yourusername/cheercast" class="btn-hero btn-hero-primary">
+                    今すぐ使ってみる！
+                </a>
+                <a href="#how-to" class="btn-hero btn-hero-secondary">
+                    使い方を見る
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="catchcopy">
+        <h2>毎日頑張っているあなたへ 💝</h2>
+        <p class="catchcopy-text">
+            「今日も一日お疲れ様！」<br>
+            そんな<span class="highlight">温かい言葉</span>をかけてもらえたら、明日も頑張れる気がしませんか？<br>
+            CheerCastは、あなたの日々の<span class="highlight">小さな成果</span>も<span class="highlight">大きな挑戦</span>も、<br>
+            2人のAIパーソナリティが楽しく褒めてくれるラジオ番組を自動生成します！
+        </p>
+    </section>
+
+    <section class="characters">
+        <h2>あなたを応援する2人のパーソナリティ 🎤</h2>
+        <div class="character-cards">
+            <div class="character-card">
+                <div class="character-emoji">👩</div>
+                <h3 class="character-name">あかり</h3>
+                <p class="character-description">
+                    明るく元気な女性パーソナリティ。<br>
+                    どんな小さな成果も見逃さず、<br>
+                    全力で褒めてくれる応援団長！
+                </p>
+            </div>
+            <div class="character-card">
+                <div class="character-emoji">👨</div>
+                <h3 class="character-name">けんた</h3>
+                <p class="character-description">
+                    落ち着いた男性パーソナリティ。<br>
+                    的確なアドバイスと温かい励ましで、<br>
+                    あなたの努力を認めてくれる！
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="features">
+        <h2>CheerCastの楽しい機能 ✨</h2>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-emoji">🤖</div>
+                <h3 class="feature-title">AI台本自動生成</h3>
+                <p class="feature-description">
+                    Google Gemini APIが、あなたの日記から自然な会話を生成！まるで本物のラジオ番組のよう！
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-emoji">🎙️</div>
+                <h3 class="feature-title">リアルな音声合成</h3>
+                <p class="feature-description">
+                    Google Cloud Text-to-Speechで、本当に話しているような自然な音声を実現！
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-emoji">🎵</div>
+                <h3 class="feature-title">BGM付き本格仕様</h3>
+                <p class="feature-description">
+                    BGMも自動で追加！本格的なラジオ番組として、通勤中にも聴けちゃう！
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-emoji">📝</div>
+                <h3 class="feature-title">どんな形式でもOK</h3>
+                <p class="feature-description">
+                    テキスト、Markdown、JSON、CSV...お好きな形式でメモを書くだけ！
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-emoji">⚡</div>
+                <h3 class="feature-title">超簡単コマンド</h3>
+                <p class="feature-description">
+                    たった1行のコマンドで、あなただけのラジオ番組が完成！
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-emoji">🎨</div>
+                <h3 class="feature-title">カスタマイズ自在</h3>
+                <p class="feature-description">
+                    優しく？元気に？褒めスタイルも番組の長さも自由自在！
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="how-to" id="how-to">
+        <h2>使い方はとっても簡単！ 🚀</h2>
+        <div class="steps-container">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3 class="step-title">インストール</h3>
+                    <p class="step-description">Node.jsがあれば、npmで簡単インストール！</p>
+                    <div class="step-code">npm install -g cheercast</div>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3 class="step-title">今日の出来事をメモ</h3>
+                    <p class="step-description">日記、TODO達成、なんでもOK！テキストファイルに書くだけ！</p>
+                    <div class="step-code">今日はTypeScriptの勉強を2時間した！<br>新しいプロジェクトの設計も完了！</div>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3 class="step-title">魔法のコマンドを実行</h3>
+                    <p class="step-description">たった1行で、あなただけのラジオ番組が生成される！</p>
+                    <div class="step-code">cheercast generate -i memo.txt -o today.mp3</div>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h3 class="step-title">褒められタイム！</h3>
+                    <p class="step-description">生成されたMP3を再生して、今日の頑張りを褒めてもらおう！</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="sample">
+        <h2>こんな感じで褒めてくれます！ 💖</h2>
+        <div class="radio-show">
+            <div class="radio-header">
+                <h3 class="radio-title">📻 CheerCast Radio Show</h3>
+                <p class="radio-date">2024年6月21日放送分</p>
+            </div>
+            <div class="dialogue">
+                <div class="speaker-icon">👩</div>
+                <div class="dialogue-content">
+                    <p class="speaker-name">あかり</p>
+                    <p>みなさんこんにちは〜！CheerCastの時間がやってまいりました！今日も一日お疲れ様でした〜！</p>
+                </div>
+            </div>
+            <div class="dialogue">
+                <div class="speaker-icon">👨</div>
+                <div class="dialogue-content">
+                    <p class="speaker-name">けんた</p>
+                    <p>お疲れ様でした！今日はTypeScriptの勉強を2時間もされたんですね。素晴らしい集中力です！</p>
+                </div>
+            </div>
+            <div class="dialogue">
+                <div class="speaker-icon">👩</div>
+                <div class="dialogue-content">
+                    <p class="speaker-name">あかり</p>
+                    <p>本当にすごい！2時間も勉強するのって、なかなかできることじゃないですよ〜！しかも新しいプロジェクトの設計まで完了させちゃうなんて！</p>
+                </div>
+            </div>
+            <div class="dialogue">
+                <div class="speaker-icon">👨</div>
+                <div class="dialogue-content">
+                    <p class="speaker-name">けんた</p>
+                    <p>設計をしっかりすることで、後の開発がスムーズになりますからね。今日の努力は必ず将来の自分を助けてくれますよ。</p>
+                </div>
+            </div>
+            <div class="dialogue">
+                <div class="speaker-icon">👩</div>
+                <div class="dialogue-content">
+                    <p class="speaker-name">あかり</p>
+                    <p>明日も素敵な一日になりますように！それでは、また明日お会いしましょう〜！ばいば〜い！</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta">
+        <h2>さあ、今日から始めよう！ 🎉</h2>
+        <p class="cta-text">
+            毎日の小さな成果を見逃さず、<br>
+            モチベーションを保ち続けましょう！
+        </p>
+        <div class="cta-buttons">
+            <a href="https://github.com/yourusername/cheercast" class="btn-hero btn-hero-primary">
+                GitHubでインストール
+            </a>
+            <a href="https://github.com/yourusername/cheercast#-インストール" class="btn-hero btn-hero-secondary">
+                詳しい使い方を見る
+            </a>
+        </div>
+    </section>
+
+    <footer>
+        <p>© 2024 CheerCast - Made with ❤️ by CheerCast Team</p>
+        <p>
+            <a href="https://github.com/yourusername/cheercast">GitHub</a> |
+            <a href="https://github.com/yourusername/cheercast/issues">Issues</a> |
+            <a href="https://github.com/yourusername/cheercast/blob/main/LICENSE">License (MIT)</a>
+        </p>
+        <p style="margin-top: 20px; font-size: 14px; opacity: 0.8;">
+            今日も頑張ったあなたは、本当にえらい！ 🌟
+        </p>
+    </footer>
+</body>
+</html>
