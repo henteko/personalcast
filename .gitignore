@@ -58,3 +58,6 @@ keyfile.json
 # User configuration files
 cheercast.config.json
 sample_memo.txt
+
+# Build files
+dist/
