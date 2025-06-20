@@ -9,7 +9,7 @@ CheerCastは、日記やライフログから、AIが2人のパーソナリテ�
 ## ✨ 特徴
 
 - 📝 様々な形式のメモファイルに対応（.txt, .md, .json, .csv）
-- 🤖 Google Gemini APIによる自然な対話台本生成
+- 🤖 Google Vertex AI (Gemini)による自然な対話台本生成
 - 🎙️ Google Cloud Text-to-Speechによる高品質な音声合成
 - 🎵 BGM付きの本格的なラジオ番組形式
 - ⚡ シンプルなCLIインターフェース
@@ -23,7 +23,7 @@ CheerCastは、日記やライフログから、AIが2人のパーソナリテ�
 - npm 8以上
 - FFmpeg（システムにインストール済み）
 - Google Cloud Platform アカウント
-- Google Gemini API キー
+- Vertex AI API 有効化
 
 ### FFmpegのインストール
 
@@ -78,14 +78,15 @@ cheercast --help
 ### 1. Google Cloud Platform の設定
 
 1. [Google Cloud Console](https://console.cloud.google.com/) でプロジェクトを作成
-2. Text-to-Speech API を有効化
-3. サービスアカウントを作成し、キーファイル（JSON）をダウンロード
+2. 以下のAPIを有効化:
+   - Cloud Text-to-Speech API
+   - Vertex AI API
+3. サービスアカウントを作成し、以下のロールを付与:
+   - Vertex AI ユーザー (roles/aiplatform.user)
+   - Cloud Text-to-Speech ユーザー
+4. サービスアカウントのキーファイル（JSON）をダウンロード
 
-### 2. Google Gemini API の設定
-
-1. [Google AI Studio](https://aistudio.google.com/app/apikey) でAPIキーを取得
-
-### 3. 環境変数の設定
+### 2. 環境変数の設定
 
 ```bash
 cp .env.example .env
@@ -97,9 +98,7 @@ cp .env.example .env
 # Google Cloud設定
 GOOGLE_CLOUD_PROJECT_ID=your-project-id
 GOOGLE_CLOUD_KEYFILE=path/to/keyfile.json
-
-# Google Gemini API
-GEMINI_API_KEY=your-gemini-api-key
+GOOGLE_CLOUD_LOCATION=us-central1
 
 # オプション設定
 DEFAULT_DURATION=10
@@ -107,7 +106,7 @@ DEFAULT_STYLE=gentle
 BGM_ENABLED=true
 ```
 
-### 4. 初期設定
+### 3. 初期設定
 
 ```bash
 cheercast init
@@ -351,9 +350,10 @@ echo $GOOGLE_CLOUD_KEYFILE
 ls -la $GOOGLE_CLOUD_KEYFILE
 ```
 
-#### Gemini APIエラー
-- APIキーが正しいか確認
-- APIの利用制限に達していないか確認
+#### Vertex AI APIエラー
+- プロジェクトIDが正しいか確認
+- Vertex AI APIが有効化されているか確認
+- サービスアカウントに適切な権限があるか確認
 - ネットワーク接続を確認
 
 #### 音声生成が遅い

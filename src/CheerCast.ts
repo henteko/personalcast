@@ -16,7 +16,8 @@ export class CheerCast {
 
     // Initialize with environment variables
     this.scriptGenerator = new ScriptGenerator({
-      apiKey: process.env.GEMINI_API_KEY ?? '',
+      projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
+      location: process.env.GOOGLE_CLOUD_LOCATION,
       model: process.env.GEMINI_MODEL ?? 'gemini-1.5-pro',
     });
 

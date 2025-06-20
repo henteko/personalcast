@@ -6,13 +6,13 @@ dotenv.config();
 
 export interface AppConfig {
   gemini: {
-    apiKey: string;
     model: string;
     temperature: number;
   };
   googleCloud: {
     projectId: string;
     keyFilename?: string;
+    location?: string;
   };
   personalities: {
     host1: {
@@ -55,13 +55,13 @@ class Config {
   private loadConfig(): AppConfig {
     const defaultConfig: AppConfig = {
       gemini: {
-        apiKey: process.env.GEMINI_API_KEY ?? '',
         model: 'gemini-1.5-pro',
         temperature: 0.7,
       },
       googleCloud: {
         projectId: process.env.GOOGLE_CLOUD_PROJECT_ID ?? '',
         keyFilename: process.env.GOOGLE_CLOUD_KEYFILE,
+        location: process.env.GOOGLE_CLOUD_LOCATION ?? 'us-central1',
       },
       personalities: {
         host1: {
@@ -115,14 +115,6 @@ class Config {
 
   get(): AppConfig {
     return this.config;
-  }
-
-  getGeminiApiKey(): string {
-    const apiKey = this.config.gemini.apiKey;
-    if (!apiKey) {
-      throw new Error('GEMINI_API_KEY is not set in environment variables');
-    }
-    return apiKey;
   }
 }
 

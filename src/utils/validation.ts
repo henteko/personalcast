@@ -125,7 +125,7 @@ export async function validateOutputPath(outputPath: string): Promise<Validation
 }
 
 export function validateEnvironmentVariables(): ValidationResult {
-  const required = ['GEMINI_API_KEY', 'GOOGLE_CLOUD_PROJECT_ID', 'GOOGLE_CLOUD_KEYFILE'];
+  const required = ['GOOGLE_CLOUD_PROJECT_ID', 'GOOGLE_CLOUD_KEYFILE'];
 
   const missing = required.filter((key) => !process.env[key]);
 

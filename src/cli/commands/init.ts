@@ -71,9 +71,7 @@ export async function initCommand(): Promise<void> {
     const envContent = `# Google Cloud設定
 GOOGLE_CLOUD_PROJECT_ID=your-project-id
 GOOGLE_CLOUD_KEYFILE=path/to/keyfile.json
-
-# Google Gemini API
-GEMINI_API_KEY=your-gemini-api-key
+GOOGLE_CLOUD_LOCATION=asia-northeast1
 
 # オプション設定
 DEFAULT_DURATION=10
@@ -107,7 +105,7 @@ BGM_ENABLED=true`;
     console.log('📋 次のステップ:');
     console.log('1. .env ファイルを作成し、APIキーを設定してください');
     console.log('   cp .env.example .env');
-    console.log('2. Google Cloud と Gemini API のキーを取得してください');
+    console.log('2. Google Cloud のサービスアカウントキーを取得してください');
     console.log('3. cheercast generate -i sample_memo.txt でテスト実行できます');
     console.log();
     console.log('詳細は README.md をご覧ください。');

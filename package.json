@@ -58,6 +58,7 @@
   },
   "dependencies": {
     "@google-cloud/text-to-speech": "^6.1.0",
+    "@google-cloud/vertexai": "^1.10.0",
     "@google/generative-ai": "^0.24.1",
     "@types/fluent-ffmpeg": "^2.1.27",
     "commander": "^14.0.0",
