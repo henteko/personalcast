@@ -1,4 +1,4 @@
-import { VertexAIClient } from '../../services/vertex-ai/VertexAIClient';
+import { GeminiAPIClient } from '../../services/gemini-api/GeminiAPIClient';
 import { config } from '../../config';
 import {
   ParsedMemo,
@@ -12,17 +12,16 @@ import {
 } from '../../types';
 
 export interface ScriptGeneratorConfig {
-  projectId?: string;
-  location?: string;
+  apiKey?: string;
   model?: string;
   temperature?: number;
 }
 
 export class ScriptGenerator {
-  private vertexAIClient: VertexAIClient;
+  private geminiClient: GeminiAPIClient;
 
   constructor(generatorConfig?: ScriptGeneratorConfig) {
-    this.vertexAIClient = new VertexAIClient(generatorConfig);
+    this.geminiClient = new GeminiAPIClient(generatorConfig);
   }
 
   async generateScript(
@@ -33,7 +32,7 @@ export class ScriptGenerator {
     const prompt = this.createPrompt(memo, radioConfig.style);
 
     try {
-      const response = await this.vertexAIClient.generateContentWithRetry(prompt);
+      const response = await this.geminiClient.generateContentWithRetry(prompt);
       const script = this.parseGeminiResponse(response);
 
       return {

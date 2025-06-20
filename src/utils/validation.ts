@@ -125,7 +125,7 @@ export async function validateOutputPath(outputPath: string): Promise<Validation
 }
 
 export function validateEnvironmentVariables(): ValidationResult {
-  const required = ['GOOGLE_CLOUD_PROJECT_ID', 'GOOGLE_CLOUD_KEYFILE'];
+  const required = ['GEMINI_API_KEY'];
 
   const missing = required.filter((key) => !process.env[key]);
 
@@ -135,6 +135,8 @@ export function validateEnvironmentVariables(): ValidationResult {
       error: `Missing required environment variables: ${missing.join(', ')}`,
     };
   }
+
+  // Google Cloud TTS is optional, no warning needed
 
   return { valid: true };
 }

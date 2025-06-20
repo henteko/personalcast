@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { ScriptGenerator } from '../ScriptGenerator';
-import { VertexAIClient } from '../../../services/vertex-ai/VertexAIClient';
+import { GeminiAPIClient } from '../../../services/gemini-api/GeminiAPIClient';
 import {
   ParsedMemo,
   ActivityCategory,
@@ -9,7 +9,7 @@ import {
   PraiseStyle,
 } from '../../../types';
 
-jest.mock('../../../services/vertex-ai/VertexAIClient');
+jest.mock('../../../services/gemini-api/GeminiAPIClient');
 jest.mock('../../../config', () => ({
   config: {
     get: () => ({
@@ -25,14 +25,14 @@ jest.mock('../../../config', () => ({
 
 describe('ScriptGenerator', () => {
   let generator: ScriptGenerator;
-  let mockVertexAIClient: jest.Mocked<VertexAIClient>;
+  let mockGeminiClient: jest.Mocked<GeminiAPIClient>;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockVertexAIClient = new VertexAIClient() as jest.Mocked<VertexAIClient>;
+    mockGeminiClient = new GeminiAPIClient() as jest.Mocked<GeminiAPIClient>;
     generator = new ScriptGenerator();
     // @ts-expect-error - Accessing private property for testing
-    generator.vertexAIClient = mockVertexAIClient;
+    generator.geminiClient = mockGeminiClient;
   });
 
   describe('generateScript', () => {
@@ -62,7 +62,7 @@ describe('ScriptGenerator', () => {
 あかり: 明日も素敵な一日になりますように！
 けんた: また明日も頑張りましょう！`;
 
-      mockVertexAIClient.generateContentWithRetry.mockResolvedValue(mockResponse);
+      mockGeminiClient.generateContentWithRetry.mockResolvedValue(mockResponse);
 
       const result = await generator.generateScript(memo);
 
@@ -82,13 +82,11 @@ describe('ScriptGenerator', () => {
         positiveElements: [],
       };
 
-      mockVertexAIClient.generateContentWithRetry.mockResolvedValue(
-        '[オープニング]\nあかり: テスト',
-      );
+      mockGeminiClient.generateContentWithRetry.mockResolvedValue('[オープニング]\nあかり: テスト');
 
       await generator.generateScript(memo, { style: PraiseStyle.ENERGETIC });
 
-      const callArgs = mockVertexAIClient.generateContentWithRetry.mock.calls[0][0];
+      const callArgs = mockGeminiClient.generateContentWithRetry.mock.calls[0][0];
       expect(callArgs).toContain('エネルギッシュ');
     });
   });
