@@ -12,7 +12,9 @@
       "Bash(git add:*)",
       "Bash(npx tsc:*)",
       "Bash(grep:*)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run:*)"
     ],
     "deny": []
   }

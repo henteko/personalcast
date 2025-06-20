@@ -59,22 +59,36 @@ export async function previewCommand(options: PreviewOptions): Promise<void> {
 
     const personalities = config.get().personalities;
 
-    for (const segment of script.segments) {
-      console.log(`【${getSegmentName(segment.type)}】`);
-      console.log();
+    if (script.segments) {
+      // セグメント形式の場合
+      for (const segment of script.segments) {
+        console.log(`【${getSegmentName(segment.type)}】`);
+        console.log();
 
-      for (const dialogue of segment.dialogues) {
-        const speaker =
-          dialogue.speaker === PersonalityType.AKARI
-            ? personalities.host1.name
-            : personalities.host2.name;
-        console.log(`${speaker}: ${dialogue.text}`);
+        for (const dialogue of segment.dialogues) {
+          const speaker =
+            dialogue.speaker === PersonalityType.AKARI
+              ? personalities.host1.name
+              : personalities.host2.name;
+          console.log(`${speaker}: ${dialogue.text ?? dialogue.content}`);
+
+          if (dialogue.pause) {
+            console.log(`（間: ${dialogue.pause}秒）`);
+          }
+        }
+
+        console.log();
+      }
+    } else {
+      // dialogues配列形式の場合
+      for (const dialogue of script.dialogues) {
+        const speaker = dialogue.personality || 'ナレーター';
+        console.log(`${speaker}: ${dialogue.text ?? dialogue.content}`);
 
         if (dialogue.pause) {
           console.log(`（間: ${dialogue.pause}秒）`);
         }
       }
-
       console.log();
     }
 

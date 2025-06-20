@@ -66,7 +66,9 @@ export async function generateCommand(options: GenerateOptions): Promise<void> {
       style: options.style as PraiseStyle,
       duration: parseInt(options.duration),
     });
-    progress.info(`${script.segments.length}セグメントの台本を生成しました`);
+    progress.info(
+      `${script.segments?.length ?? script.dialogues.length}セグメントの台本を生成しました`,
+    );
 
     // Step 3: Generate voice
     progress.update('音声を生成中...');

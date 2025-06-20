@@ -11,9 +11,9 @@ jest.mock('../../core/generator/ScriptGenerator');
 jest.mock('../../core/voice/VoiceGenerator');
 jest.mock('../../core/mixer/AudioMixer');
 jest.mock('../../utils', () => {
-  const actual = jest.requireActual('../../utils') as Record<string, unknown>;
+  const actualUtils = jest.requireActual('../../utils');
   return {
-    ...actual,
+    ...(actualUtils as object),
     findBGMFile: jest.fn(),
   };
 });
