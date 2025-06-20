@@ -61,3 +61,5 @@ sample_memo.txt
 
 # Build files
 dist/
+
+!docs/sample.mp3

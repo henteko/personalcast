@@ -6,12 +6,12 @@ const DEFAULT_CONFIG = {
   personalities: {
     host1: {
       name: 'あかり',
-      voiceName: 'ja-JP-Wavenet-A',
+      voiceName: 'Kore',
       character: '優しくて励まし上手',
     },
     host2: {
       name: 'けんた',
-      voiceName: 'ja-JP-Wavenet-C',
+      voiceName: 'Puck',
       character: '明るくて分析好き',
     },
   },
