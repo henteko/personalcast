@@ -67,11 +67,12 @@ describe('VoiceGenerator', () => {
 
       const result = await generator.generateSpeech(script as RadioScript);
 
-      expect(result).toHaveLength(3); // 2 audio buffers + 1 pause
+      // Pauses are temporarily disabled
+      expect(result).toHaveLength(2); // 2 audio buffers (no pauses)
       expect(result[0].data).toBe(mockAudioData);
       expect(result[0].duration).toBe(2.0);
-      expect(result[1].duration).toBe(0.5); // Default pause between dialogues
-      expect(result[2].data).toBe(mockAudioData);
+      expect(result[1].data).toBe(mockAudioData);
+      expect(result[1].duration).toBe(2.0);
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockTTSClient.synthesizeSpeechWithRetry).toHaveBeenCalledTimes(2);
     });

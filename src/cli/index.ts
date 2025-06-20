@@ -19,7 +19,11 @@ program
   .command('generate')
   .description('メモファイルからラジオ番組を生成')
   .requiredOption('-i, --input <path>', '入力ファイルまたはディレクトリのパス')
-  .option('-o, --output <path>', '出力ファイル名', `radio_${new Date().toISOString().split('T')[0]}.mp3`)
+  .option(
+    '-o, --output <path>',
+    '出力ファイル名',
+    `radio_${new Date().toISOString().split('T')[0]}.mp3`,
+  )
   .option('-t, --type <type>', '番組タイプ (daily|weekly)', 'daily')
   .option('-s, --style <style>', '褒めスタイル (gentle|energetic)', 'gentle')
   .option('-d, --duration <minutes>', '番組の長さ（分）', '10')

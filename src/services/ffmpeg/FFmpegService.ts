@@ -38,18 +38,35 @@ export class FFmpegService {
   async concatenateAudio(audioBuffers: AudioBuffer[], options: ConcatOptions): Promise<string> {
     await this.ensureTempDir();
 
-    // Save audio buffers as temporary files
+    if (audioBuffers.length === 0) {
+      throw new Error('No audio buffers to concatenate');
+    }
+
+    // If only one buffer, just save it directly
+    if (audioBuffers.length === 1) {
+      await fs.writeFile(options.outputPath, audioBuffers[0].data);
+      return options.outputPath;
+    }
+
+    // Save audio buffers as temporary files with unique names
     const tempFiles: string[] = [];
+    const timestamp = Date.now();
+
     for (let i = 0; i < audioBuffers.length; i++) {
-      const tempPath = path.join(this.tempDir, `temp_${Date.now()}_${i}.mp3`);
+      const tempPath = path.join(this.tempDir, `audio_${timestamp}_${i}.mp3`);
       await fs.writeFile(tempPath, audioBuffers[i].data);
       tempFiles.push(tempPath);
     }
 
-    // Create concat list file
-    const listPath = path.join(this.tempDir, `concat_${Date.now()}.txt`);
-    const listContent = tempFiles.map((file) => `file '${file}'`).join('\n');
-    await fs.writeFile(listPath, listContent);
+    // Create concat list file with proper formatting
+    const listPath = path.join(this.tempDir, `concat_list_${timestamp}.txt`);
+    const listContent = tempFiles
+      .map(
+        (file) => `file '${file.replace(/'/g, "'\\''")}'
+`,
+      )
+      .join('');
+    await fs.writeFile(listPath, listContent, 'utf8');
 
     try {
       await new Promise<void>((resolve, reject) => {
@@ -59,6 +76,7 @@ export class FFmpegService {
           .audioCodec('libmp3lame')
           .audioBitrate('192k')
           .output(options.outputPath)
+          .outputOptions(['-y']) // Overwrite output file
           .on('end', () => resolve())
           .on('error', (err: Error) => reject(err))
           .run();

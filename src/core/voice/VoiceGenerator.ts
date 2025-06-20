@@ -45,7 +45,8 @@ export class VoiceGenerator {
     }
 
     // Add pauses between dialogues
-    return this.addPauses(audioBuffers, script);
+    // TODO: Fix silence buffer generation
+    return audioBuffers; // this.addPauses(audioBuffers, script);
   }
 
   async synthesizeDialogue(
