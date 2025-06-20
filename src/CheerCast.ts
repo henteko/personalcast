@@ -1,6 +1,5 @@
 import { MemoParser } from './core/parser/MemoParser';
 import { ScriptGenerator } from './core/generator/ScriptGenerator';
-import { VoiceGenerator } from './core/voice/VoiceGenerator';
 import { GeminiVoiceGenerator } from './core/voice/GeminiVoiceGenerator';
 import { AudioMixer } from './core/mixer/AudioMixer';
 import { ParsedMemo, RadioScript, GenerationOptions, PraiseStyle } from './types';
@@ -9,7 +8,7 @@ import { findBGMFile } from './utils';
 export class CheerCast {
   private memoParser: MemoParser;
   private scriptGenerator: ScriptGenerator;
-  private voiceGenerator: VoiceGenerator | GeminiVoiceGenerator;
+  private voiceGenerator: GeminiVoiceGenerator;
   private audioMixer: AudioMixer;
 
   constructor() {
@@ -21,17 +20,10 @@ export class CheerCast {
       model: process.env.GEMINI_MODEL ?? 'gemini-1.5-pro',
     });
 
-    // Use Gemini TTS if API key is available, otherwise use Google Cloud TTS
-    if (process.env.GEMINI_API_KEY) {
-      this.voiceGenerator = new GeminiVoiceGenerator({
-        apiKey: process.env.GEMINI_API_KEY,
-      });
-    } else {
-      this.voiceGenerator = new VoiceGenerator({
-        projectId: process.env.GOOGLE_CLOUD_PROJECT_ID ?? '',
-        keyFilename: process.env.GOOGLE_CLOUD_KEYFILE ?? '',
-      });
-    }
+    // Use Gemini TTS
+    this.voiceGenerator = new GeminiVoiceGenerator({
+      apiKey: process.env.GEMINI_API_KEY,
+    });
 
     this.audioMixer = new AudioMixer();
   }

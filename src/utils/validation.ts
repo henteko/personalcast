@@ -136,7 +136,5 @@ export function validateEnvironmentVariables(): ValidationResult {
     };
   }
 
-  // Google Cloud TTS is optional, no warning needed
-
   return { valid: true };
 }

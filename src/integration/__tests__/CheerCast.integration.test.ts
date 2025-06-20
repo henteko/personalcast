@@ -3,12 +3,12 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { CheerCast } from '../../CheerCast';
 import { ScriptGenerator } from '../../core/generator/ScriptGenerator';
-import { VoiceGenerator } from '../../core/voice/VoiceGenerator';
+import { GeminiVoiceGenerator } from '../../core/voice/GeminiVoiceGenerator';
 import { AudioMixer } from '../../core/mixer/AudioMixer';
 import * as utils from '../../utils';
 
 jest.mock('../../core/generator/ScriptGenerator');
-jest.mock('../../core/voice/VoiceGenerator');
+jest.mock('../../core/voice/GeminiVoiceGenerator');
 jest.mock('../../core/mixer/AudioMixer');
 jest.mock('../../utils', () => {
   const actualUtils = jest.requireActual('../../utils');
@@ -22,7 +22,7 @@ describe('CheerCast Integration Tests', () => {
   let cheerCast: CheerCast;
   let tempDir: string;
   let mockScriptGenerator: jest.Mocked<ScriptGenerator>;
-  let mockVoiceGenerator: jest.Mocked<VoiceGenerator>;
+  let mockVoiceGenerator: jest.Mocked<GeminiVoiceGenerator>;
   let mockAudioMixer: jest.Mocked<AudioMixer>;
 
   beforeEach(async () => {
@@ -34,17 +34,19 @@ describe('CheerCast Integration Tests', () => {
 
     // Create mock instances
     const MockedScriptGenerator = ScriptGenerator as jest.MockedClass<typeof ScriptGenerator>;
-    const MockedVoiceGenerator = VoiceGenerator as jest.MockedClass<typeof VoiceGenerator>;
+    const MockedVoiceGenerator = GeminiVoiceGenerator as jest.MockedClass<
+      typeof GeminiVoiceGenerator
+    >;
     const MockedAudioMixer = AudioMixer as jest.MockedClass<typeof AudioMixer>;
 
     mockScriptGenerator = new MockedScriptGenerator() as jest.Mocked<ScriptGenerator>;
-    mockVoiceGenerator = new MockedVoiceGenerator() as jest.Mocked<VoiceGenerator>;
+    mockVoiceGenerator = new MockedVoiceGenerator() as jest.Mocked<GeminiVoiceGenerator>;
     mockAudioMixer = new MockedAudioMixer() as jest.Mocked<AudioMixer>;
 
     cheerCast = new CheerCast();
     // @ts-expect-error - Accessing private property for testing
     cheerCast.scriptGenerator = mockScriptGenerator;
-    // @ts-expect-error - Accessing private property for testing
+    // @ts-expect-error - accessing private property for testing
     cheerCast.voiceGenerator = mockVoiceGenerator;
     // @ts-expect-error - Accessing private property for testing
     cheerCast.audioMixer = mockAudioMixer;

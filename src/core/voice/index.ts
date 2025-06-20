@@ -1,1 +1,1 @@
-export { VoiceGenerator } from './VoiceGenerator';
+export { GeminiVoiceGenerator } from './GeminiVoiceGenerator';

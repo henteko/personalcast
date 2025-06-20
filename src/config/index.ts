@@ -9,11 +9,6 @@ export interface AppConfig {
     model: string;
     temperature: number;
   };
-  googleCloud: {
-    projectId: string;
-    keyFilename?: string;
-    location?: string;
-  };
   personalities: {
     host1: {
       name: string;
@@ -58,20 +53,15 @@ class Config {
         model: 'gemini-1.5-pro',
         temperature: 0.7,
       },
-      googleCloud: {
-        projectId: process.env.GOOGLE_CLOUD_PROJECT_ID ?? '',
-        keyFilename: process.env.GOOGLE_CLOUD_KEYFILE,
-        location: process.env.GOOGLE_CLOUD_LOCATION ?? 'us-central1',
-      },
       personalities: {
         host1: {
           name: 'あかり',
-          voiceName: 'ja-JP-Wavenet-A',
+          voiceName: 'Kore',
           character: '優しくて励まし上手',
         },
         host2: {
           name: 'けんた',
-          voiceName: 'ja-JP-Wavenet-C',
+          voiceName: 'Puck',
           character: '明るくて分析好き',
         },
       },
@@ -103,7 +93,6 @@ class Config {
   private mergeConfig(defaultConfig: AppConfig, userConfig: Partial<AppConfig>): AppConfig {
     return {
       gemini: { ...defaultConfig.gemini, ...userConfig.gemini },
-      googleCloud: { ...defaultConfig.googleCloud, ...userConfig.googleCloud },
       personalities: {
         host1: { ...defaultConfig.personalities.host1, ...userConfig.personalities?.host1 },
         host2: { ...defaultConfig.personalities.host2, ...userConfig.personalities?.host2 },
