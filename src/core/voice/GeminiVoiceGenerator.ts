@@ -52,7 +52,7 @@ export class GeminiVoiceGenerator {
       const geminiVoiceName =
         dialogue.personality === personalities.host1.name
           ? personalities.host1.voiceName
-          : personalities.host2.voiceName
+          : personalities.host2.voiceName;
 
       return {
         speakerName: dialogue.personality,
@@ -109,7 +109,7 @@ export class GeminiVoiceGenerator {
     const geminiVoiceName =
       dialogue.personality === personalities.host1.name
         ? personalities.host1.voiceName
-        : personalities.host2.voiceName
+        : personalities.host2.voiceName;
 
     const mergedConfig = voiceConfig ?? this.defaultVoiceConfig;
 

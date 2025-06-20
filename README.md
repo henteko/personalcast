@@ -286,6 +286,7 @@ cheercast/
 
 ```json
 {
+  "radioShowName": "CheerCast",
   "personalities": {
     "host1": {
       "name": "あかり",

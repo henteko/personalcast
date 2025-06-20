@@ -138,6 +138,8 @@ cheercast init
 
 #### 設定ファイル (cheercast.config.yaml)
 ```yaml
+radioShowName: "CheerCast"
+
 personalities:
   host1:
     name: "あかり"

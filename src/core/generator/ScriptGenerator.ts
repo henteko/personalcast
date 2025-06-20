@@ -35,9 +35,10 @@ export class ScriptGenerator {
       const response = await this.geminiClient.generateContentWithRetry(prompt);
       const script = this.parseGeminiResponse(response);
 
+      const radioShowName = config.get().radioShowName ?? 'CheerCast';
       return {
         ...script,
-        title: `${memo.date.getFullYear()}年${memo.date.getMonth() + 1}月${memo.date.getDate()}日のCheerCast`,
+        title: `${memo.date.getFullYear()}年${memo.date.getMonth() + 1}月${memo.date.getDate()}日の${radioShowName}`,
         date: memo.date,
         duration: radioConfig.duration,
       };
@@ -59,8 +60,10 @@ export class ScriptGenerator {
 
     const positiveElementsText = memo.positiveElements.map((element) => `- ${element}`).join('\n');
 
+    const radioShowName = config.get().radioShowName ?? 'CheerCast';
+
     return `あなたは2人のラジオパーソナリティです。
-以下の設定で、リスナーの今日の活動を褒めるラジオ番組の台本を作成してください。
+以下の設定で、リスナーの今日の活動を褒めるラジオ番組「${radioShowName}」の台本を作成してください。
 
 【パーソナリティ設定】
 1. ${personalities.host1.name}（女性）: ${personalities.host1.character}
@@ -79,7 +82,7 @@ ${positiveElementsText}
 必ず以下の3つのセクションで構成してください：
 
 [オープニング]
-- 挨拶と番組の紹介
+- 挨拶と番組「${radioShowName}」の紹介
 - 今日も頑張ったリスナーへの労い
 
 [メイン]

@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as readline from 'readline';
 
 const DEFAULT_CONFIG = {
+  radioShowName: 'CheerCast',
   personalities: {
     host1: {
       name: 'あかり',

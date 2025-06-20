@@ -5,6 +5,7 @@ import * as fs from 'fs';
 dotenv.config();
 
 export interface AppConfig {
+  radioShowName?: string;
   gemini: {
     model: string;
     temperature: number;
@@ -48,6 +49,7 @@ class Config {
 
   private loadConfig(): AppConfig {
     const defaultConfig: AppConfig = {
+      radioShowName: 'CheerCast',
       gemini: {
         model: 'gemini-2.5-flash',
         temperature: 0.7,
@@ -90,6 +92,7 @@ class Config {
 
   private mergeConfig(defaultConfig: AppConfig, userConfig: Partial<AppConfig>): AppConfig {
     return {
+      radioShowName: userConfig.radioShowName ?? defaultConfig.radioShowName,
       gemini: { ...defaultConfig.gemini, ...userConfig.gemini },
       personalities: {
         host1: { ...defaultConfig.personalities.host1, ...userConfig.personalities?.host1 },
