@@ -4,7 +4,7 @@
   "description": "毎日のメモから2人のパーソナリティがあなたの頑張りを褒めてくれるラジオ番組を自動生成するCLIツール",
   "main": "dist/index.js",
   "bin": {
-    "cheercast": "dist/cli/index.js"
+    "cheercast": "dist/src/cli/index.js"
   },
   "directories": {
     "doc": "docs"

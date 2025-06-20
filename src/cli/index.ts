@@ -43,19 +43,5 @@ program
 // Init command
 program.command('init').description('CheerCastの初期設定を行う').action(initCommand);
 
-// Error handling
-program.exitOverride();
-
-try {
-  program.parse(process.argv);
-} catch (error) {
-  if (error instanceof Error) {
-    console.error(`エラー: ${error.message}`);
-  }
-  process.exit(1);
-}
-
-// Show help if no command is provided
-if (!process.argv.slice(2).length) {
-  program.outputHelp();
-}
+// Parse command line arguments
+program.parse(process.argv);
