@@ -10,19 +10,27 @@ export interface TTSRequest {
   volumeGainDb?: number;
 }
 
+export interface TTSClientConfig {
+  projectId?: string;
+  keyFilename?: string;
+}
+
 export class GoogleCloudTTSClient {
   private client: TextToSpeechClient;
 
-  constructor() {
+  constructor(clientConfig?: TTSClientConfig) {
     const gcpConfig = config.get().googleCloud;
     const clientOptions: Record<string, string> = {};
 
-    if (gcpConfig.projectId) {
-      clientOptions.projectId = gcpConfig.projectId;
+    const projectId = clientConfig?.projectId ?? gcpConfig.projectId;
+    const keyFilename = clientConfig?.keyFilename ?? gcpConfig.keyFilename;
+
+    if (projectId) {
+      clientOptions.projectId = projectId;
     }
 
-    if (gcpConfig.keyFilename) {
-      clientOptions.keyFilename = gcpConfig.keyFilename;
+    if (keyFilename) {
+      clientOptions.keyFilename = keyFilename;
     }
 
     this.client = new TextToSpeechClient(clientOptions);

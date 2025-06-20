@@ -5,6 +5,22 @@ import { ParsedMemo, DailyActivity, ActivityCategory } from '../../types';
 export class MemoParser {
   private readonly supportedExtensions = ['.txt', '.md', '.json', '.csv'];
 
+  async parseFile(filePath: string): Promise<ParsedMemo> {
+    const ext = path.extname(filePath).toLowerCase();
+
+    switch (ext) {
+      case '.txt':
+      case '.md':
+        return this.parseTextFile(filePath);
+      case '.json':
+        return this.parseJSONFile(filePath);
+      case '.csv':
+        return this.parseCSVFile(filePath);
+      default:
+        throw new Error(`Unsupported file type: ${ext}`);
+    }
+  }
+
   async parseTextFile(filePath: string): Promise<ParsedMemo> {
     try {
       const content = await fs.readFile(filePath, 'utf-8');
@@ -14,7 +30,7 @@ export class MemoParser {
     }
   }
 
-  async parseDirectory(dirPath: string): Promise<ParsedMemo> {
+  async parseDirectory(dirPath: string): Promise<ParsedMemo[]> {
     const files = await fs.readdir(dirPath, { withFileTypes: true });
     const memoFiles = files.filter(
       (file) => file.isFile() && this.supportedExtensions.includes(path.extname(file.name)),
@@ -25,10 +41,10 @@ export class MemoParser {
     }
 
     const memos = await Promise.all(
-      memoFiles.map((file) => this.parseTextFile(path.join(dirPath, file.name))),
+      memoFiles.map((file) => this.parseFile(path.join(dirPath, file.name))),
     );
 
-    return this.mergeMemos(memos);
+    return memos;
   }
 
   extractDailyActivities(content: string): DailyActivity[] {
@@ -213,7 +229,59 @@ export class MemoParser {
     return [...new Set(positiveElements)]; // 重複を削除
   }
 
-  private mergeMemos(memos: ParsedMemo[]): ParsedMemo {
+  async parseMarkdownFile(filePath: string): Promise<ParsedMemo> {
+    // For now, treat markdown the same as text
+    return this.parseTextFile(filePath);
+  }
+
+  async parseJSONFile(filePath: string): Promise<ParsedMemo> {
+    const content = await fs.readFile(filePath, 'utf-8');
+    const data = JSON.parse(content) as Record<string, unknown>;
+
+    // Try to extract structured data
+    const date = data.date ? new Date(data.date as string) : this.extractDate(content, filePath);
+    const activities = data.activities
+      ? (data.activities as DailyActivity[])
+      : this.extractDailyActivities(content);
+    const positiveElements = data.positiveElements
+      ? (data.positiveElements as string[])
+      : this.extractPositiveElements(content);
+
+    return {
+      date,
+      content: JSON.stringify(data, null, 2),
+      activities,
+      positiveElements,
+    };
+  }
+
+  async parseCSVFile(filePath: string): Promise<ParsedMemo> {
+    const content = await fs.readFile(filePath, 'utf-8');
+    // Simple CSV parsing for memo data
+    const lines = content.split('\n').filter((line) => line.trim());
+    const activities: DailyActivity[] = [];
+
+    for (const line of lines) {
+      const columns = line.split(',').map((col) => col.trim());
+      if (columns.length >= 2) {
+        const category = this.categorizeContent(columns[1]);
+        activities.push({
+          category,
+          description: columns[1],
+          achievement: columns[2],
+        });
+      }
+    }
+
+    return {
+      date: this.extractDate(content, filePath),
+      content,
+      activities,
+      positiveElements: this.extractPositiveElements(content),
+    };
+  }
+
+  mergeMemos(memos: ParsedMemo[]): ParsedMemo {
     // 複数のメモを統合
     const activities = memos.flatMap((memo) => memo.activities);
     const positiveElements = [...new Set(memos.flatMap((memo) => memo.positiveElements))];

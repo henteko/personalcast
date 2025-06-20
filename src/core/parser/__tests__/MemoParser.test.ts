@@ -79,7 +79,9 @@ describe('MemoParser', () => {
 
       expect(mockFs.readdir).toHaveBeenCalledWith('/path/to/dir', { withFileTypes: true });
       expect(mockFs.readFile).toHaveBeenCalledTimes(2);
-      expect(result.activities).toHaveLength(2);
+      expect(result).toHaveLength(2);
+      expect(result[0].activities).toBeDefined();
+      expect(result[1].activities).toBeDefined();
     });
 
     it('should throw error for empty directory', async () => {

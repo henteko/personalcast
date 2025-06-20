@@ -2,6 +2,12 @@ import { MemoParser } from '../../core/parser';
 import { ScriptGenerator } from '../../core/generator';
 import { PraiseStyle, PersonalityType } from '../../types';
 import { config } from '../../config';
+import {
+  validateInputPath,
+  validateProgramType,
+  validatePraiseStyle,
+  validateEnvironmentVariables,
+} from '../../utils/validation';
 
 interface PreviewOptions {
   input: string;
@@ -10,6 +16,26 @@ interface PreviewOptions {
 }
 
 export async function previewCommand(options: PreviewOptions): Promise<void> {
+  // Validate environment variables first
+  const envValidation = validateEnvironmentVariables();
+  if (!envValidation.valid) {
+    console.error(`❌ ${envValidation.error}`);
+    process.exit(1);
+  }
+
+  // Validate inputs
+  const validations = [
+    await validateInputPath(options.input),
+    validateProgramType(options.type),
+    validatePraiseStyle(options.style),
+  ];
+
+  const invalidValidation = validations.find((v) => !v.valid);
+  if (invalidValidation) {
+    console.error(`❌ ${invalidValidation.error}`);
+    process.exit(1);
+  }
+
   try {
     console.log('📝 台本プレビューを生成中...\n');
 

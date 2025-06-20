@@ -4,6 +4,15 @@ import { VoiceGenerator } from '../../core/voice';
 import { AudioMixer } from '../../core/mixer';
 import { ProgressReporter } from '../../utils';
 import { PraiseStyle } from '../../types';
+import {
+  validateInputPath,
+  validateProgramType,
+  validatePraiseStyle,
+  validateDuration,
+  validateBGMVolume,
+  validateOutputPath,
+  validateEnvironmentVariables,
+} from '../../utils/validation';
 
 interface GenerateOptions {
   input: string;
@@ -16,6 +25,29 @@ interface GenerateOptions {
 }
 
 export async function generateCommand(options: GenerateOptions): Promise<void> {
+  // Validate environment variables first
+  const envValidation = validateEnvironmentVariables();
+  if (!envValidation.valid) {
+    console.error(`❌ ${envValidation.error}`);
+    process.exit(1);
+  }
+
+  // Validate all inputs
+  const validations = [
+    await validateInputPath(options.input),
+    validateProgramType(options.type),
+    validatePraiseStyle(options.style),
+    validateDuration(options.duration),
+    options.bgm ? validateBGMVolume(options.bgmVolume) : { valid: true },
+    await validateOutputPath(options.output),
+  ];
+
+  const invalidValidation = validations.find((v) => !v.valid);
+  if (invalidValidation) {
+    console.error(`❌ ${invalidValidation.error}`);
+    process.exit(1);
+  }
+
   const progress = new ProgressReporter(6);
 
   try {

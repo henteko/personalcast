@@ -1,13 +1,11 @@
 import { GoogleCloudTTSClient } from '../../services/gcp-tts';
 import { config } from '../../config';
-import {
-  RadioScript,
-  DialogueLine,
-  PersonalityType,
-  VoiceConfig,
-  AudioBuffer,
-  SegmentType,
-} from '../../types';
+import { RadioScript, DialogueLine, VoiceConfig, AudioBuffer, SegmentType } from '../../types';
+
+export interface VoiceGeneratorConfig {
+  projectId?: string;
+  keyFilename?: string;
+}
 
 export class VoiceGenerator {
   private ttsClient: GoogleCloudTTSClient;
@@ -18,19 +16,31 @@ export class VoiceGenerator {
     volumeGainDb: 0,
   };
 
-  constructor() {
-    this.ttsClient = new GoogleCloudTTSClient();
+  constructor(generatorConfig?: VoiceGeneratorConfig) {
+    this.ttsClient = new GoogleCloudTTSClient(generatorConfig);
   }
 
-  async generateSpeech(script: RadioScript, customConfig?: VoiceConfig): Promise<AudioBuffer[]> {
+  async generateSpeech(script: RadioScript, options?: { speed?: number }): Promise<AudioBuffer[]> {
     const audioBuffers: AudioBuffer[] = [];
-    const voiceConfig = { ...this.defaultVoiceConfig, ...customConfig };
+    const voiceConfig = { ...this.defaultVoiceConfig };
 
-    // Generate speech for each dialogue
-    for (const segment of script.segments) {
-      for (const dialogue of segment.dialogues) {
+    if (options?.speed) {
+      voiceConfig.speakingRate = options.speed;
+    }
+
+    // Handle script with dialogues array directly
+    if (script.dialogues) {
+      for (const dialogue of script.dialogues) {
         const audioBuffer = await this.synthesizeDialogue(dialogue, voiceConfig);
         audioBuffers.push(audioBuffer);
+      }
+    } else if (script.segments) {
+      // Generate speech for each dialogue in segments
+      for (const segment of script.segments) {
+        for (const dialogue of segment.dialogues) {
+          const audioBuffer = await this.synthesizeDialogue(dialogue, voiceConfig);
+          audioBuffers.push(audioBuffer);
+        }
       }
     }
 
@@ -46,7 +56,7 @@ export class VoiceGenerator {
     const audioSpeed = config.get().audio.speed;
 
     const voiceName =
-      dialogue.speaker === PersonalityType.AKARI
+      dialogue.personality === personalities.host1.name
         ? personalities.host1.voiceName
         : personalities.host2.voiceName;
 
@@ -54,7 +64,7 @@ export class VoiceGenerator {
 
     try {
       const audioData = await this.ttsClient.synthesizeSpeechWithRetry({
-        text: dialogue.text,
+        text: dialogue.content ?? dialogue.text ?? '',
         voiceName,
         languageCode: mergedConfig.languageCode,
         speakingRate: mergedConfig.speakingRate * audioSpeed,
@@ -63,7 +73,7 @@ export class VoiceGenerator {
       });
 
       const duration = this.ttsClient.estimateDuration(
-        dialogue.text,
+        dialogue.content ?? dialogue.text ?? '',
         mergedConfig.speakingRate * audioSpeed,
       );
 
@@ -80,8 +90,26 @@ export class VoiceGenerator {
 
   addPauses(audioBuffers: AudioBuffer[], script: RadioScript): AudioBuffer[] {
     const result: AudioBuffer[] = [];
-    let dialogueIndex = 0;
 
+    // If script has direct dialogues array, just add pauses between them
+    if (script.dialogues && !script.segments) {
+      for (let i = 0; i < audioBuffers.length; i++) {
+        result.push(audioBuffers[i]);
+
+        // Add pause between dialogues
+        if (i < audioBuffers.length - 1) {
+          result.push(this.createSilenceBuffer(0.5));
+        }
+      }
+      return result;
+    }
+
+    // Handle segments-based scripts
+    if (!script.segments) {
+      return audioBuffers;
+    }
+
+    let dialogueIndex = 0;
     for (let segmentIndex = 0; segmentIndex < script.segments.length; segmentIndex++) {
       const segment = script.segments[segmentIndex];
 

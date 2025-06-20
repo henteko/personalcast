@@ -1,8 +1,10 @@
 export interface ParsedMemo {
   date: Date;
-  content: string;
+  dateRange?: { start: Date; end: Date };
+  content?: string;
   activities: DailyActivity[];
   positiveElements: string[];
+  summary?: string;
 }
 
 export interface DailyActivity {
@@ -22,8 +24,9 @@ export enum ActivityCategory {
 export interface RadioScript {
   title: string;
   date: Date;
-  duration: number;
-  segments: ScriptSegment[];
+  duration?: number;
+  segments?: ScriptSegment[];
+  dialogues: DialogueLine[];
 }
 
 export interface ScriptSegment {
@@ -38,8 +41,10 @@ export enum SegmentType {
 }
 
 export interface DialogueLine {
-  speaker: PersonalityType;
-  text: string;
+  speaker?: PersonalityType;
+  personality: string;
+  content: string;
+  text?: string;
   emotion?: EmotionType;
   pause?: number;
 }
@@ -86,4 +91,14 @@ export interface VoiceConfig {
 export interface AudioBuffer {
   data: Buffer;
   duration: number;
+}
+
+export interface GenerationOptions {
+  outputPath: string;
+  type?: 'daily' | 'weekly';
+  style?: 'gentle' | 'energetic';
+  duration?: number;
+  enableBGM?: boolean;
+  bgmVolume?: number;
+  voiceSpeed?: number;
 }

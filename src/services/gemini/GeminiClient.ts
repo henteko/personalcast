@@ -1,17 +1,26 @@
 import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
 import { config } from '../../config';
 
+export interface GeminiClientConfig {
+  apiKey?: string;
+  model?: string;
+  temperature?: number;
+}
+
 export class GeminiClient {
   private genAI: GoogleGenerativeAI;
   private model: GenerativeModel;
+  private temperature: number;
 
-  constructor() {
-    const apiKey = config.getGeminiApiKey();
+  constructor(clientConfig?: GeminiClientConfig) {
+    const apiKey = clientConfig?.apiKey ?? config.getGeminiApiKey();
     this.genAI = new GoogleGenerativeAI(apiKey);
     const geminiConfig = config.get().gemini;
+    const modelName = clientConfig?.model ?? geminiConfig.model;
     this.model = this.genAI.getGenerativeModel({
-      model: geminiConfig.model,
+      model: modelName,
     });
+    this.temperature = clientConfig?.temperature ?? geminiConfig.temperature;
   }
 
   async generateContent(prompt: string): Promise<string> {
@@ -19,7 +28,7 @@ export class GeminiClient {
       const result = await this.model.generateContent({
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         generationConfig: {
-          temperature: config.get().gemini.temperature,
+          temperature: this.temperature,
           maxOutputTokens: 8192,
         },
       });

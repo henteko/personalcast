@@ -148,7 +148,6 @@ describe('AudioMixer', () => {
 
       await mixer.exportToMP3(audio, outputPath);
 
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockFs.writeFile).toHaveBeenCalledWith(outputPath, audio);
     });
 
@@ -161,9 +160,8 @@ describe('AudioMixer', () => {
 
       await mixer.exportToMP3(audio, outputPath);
 
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockFs.mkdir).toHaveBeenCalledWith('/new/dir', { recursive: true });
-      // eslint-disable-next-line @typescript-eslint/unbound-method
+
       expect(mockFs.writeFile).toHaveBeenCalledWith(outputPath, audio);
     });
 

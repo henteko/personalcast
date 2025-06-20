@@ -11,11 +11,17 @@ import {
   RadioConfig,
 } from '../../types';
 
+export interface ScriptGeneratorConfig {
+  apiKey: string;
+  model?: string;
+  temperature?: number;
+}
+
 export class ScriptGenerator {
   private geminiClient: GeminiClient;
 
-  constructor() {
-    this.geminiClient = new GeminiClient();
+  constructor(generatorConfig?: ScriptGeneratorConfig) {
+    this.geminiClient = new GeminiClient(generatorConfig);
   }
 
   async generateScript(
@@ -139,7 +145,10 @@ ${positiveElementsText}
       throw new Error('Invalid script format: no valid segments found');
     }
 
-    return { segments };
+    // Extract all dialogues from segments
+    const allDialogues = segments.flatMap((segment) => segment.dialogues);
+
+    return { segments, dialogues: allDialogues };
   }
 
   private parseDialogues(content: string): DialogueLine[] {
@@ -163,6 +172,8 @@ ${positiveElementsText}
         if (speaker) {
           dialogues.push({
             speaker,
+            personality: speakerName.trim(),
+            content: text.trim(),
             text: text.trim(),
           });
         }

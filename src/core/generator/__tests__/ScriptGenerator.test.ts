@@ -69,9 +69,9 @@ describe('ScriptGenerator', () => {
       expect(result.title).toContain('2024年1月20日');
       expect(result.date).toEqual(memo.date);
       expect(result.segments).toHaveLength(3);
-      expect(result.segments[0].type).toBe(SegmentType.OPENING);
-      expect(result.segments[1].type).toBe(SegmentType.MAIN);
-      expect(result.segments[2].type).toBe(SegmentType.ENDING);
+      expect(result.segments![0].type).toBe(SegmentType.OPENING);
+      expect(result.segments![1].type).toBe(SegmentType.MAIN);
+      expect(result.segments![2].type).toBe(SegmentType.ENDING);
     });
 
     it('should handle different praise styles', async () => {
@@ -152,11 +152,11 @@ describe('ScriptGenerator', () => {
 
       const script = generator.parseGeminiResponse(response);
 
-      expect(script.segments).toHaveLength(3);
-      expect(script.segments[0].dialogues).toHaveLength(2);
-      expect(script.segments[0].dialogues[0].speaker).toBe(PersonalityType.AKARI);
-      expect(script.segments[0].dialogues[0].text).toBe('こんにちは！');
-      expect(script.segments[0].dialogues[1].speaker).toBe(PersonalityType.KENTA);
+      expect(script.segments!).toHaveLength(3);
+      expect(script.segments![0].dialogues).toHaveLength(2);
+      expect(script.segments![0].dialogues[0].speaker).toBe(PersonalityType.AKARI);
+      expect(script.segments![0].dialogues[0].text).toBe('こんにちは！');
+      expect(script.segments![0].dialogues[1].speaker).toBe(PersonalityType.KENTA);
     });
 
     it('should handle responses with irregular formatting', () => {
@@ -169,9 +169,9 @@ describe('ScriptGenerator', () => {
 
       const script = generator.parseGeminiResponse(response);
 
-      expect(script.segments[0].dialogues[0].text).toBe('こんにちは！');
-      expect(script.segments[0].dialogues[1].text).toBe('今日も頑張りましたね！');
-      expect(script.segments[1].dialogues[0].text).toBe(
+      expect(script.segments![0].dialogues[0].text).toBe('こんにちは！');
+      expect(script.segments![0].dialogues[1].text).toBe('今日も頑張りましたね！');
+      expect(script.segments![1].dialogues[0].text).toBe(
         'プロジェクトの完成、おめでとうございます！',
       );
     });
