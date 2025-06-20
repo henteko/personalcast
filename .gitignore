@@ -52,3 +52,5 @@ output/
 .cache/
 .eslintcache
 .prettierrc
+
+keyfile.json
