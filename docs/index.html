@@ -481,6 +481,38 @@
             margin-bottom: 5px;
         }
         
+        /* Audio Player */
+        .audio-player {
+            max-width: 800px;
+            margin: 30px auto 0;
+            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(255,107,107,0.2);
+            text-align: center;
+        }
+        
+        .audio-player h3 {
+            color: white;
+            font-size: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .audio-player audio {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            display: block;
+        }
+        
+        .audio-player audio::-webkit-media-controls-panel {
+            background-color: rgba(255,255,255,0.9);
+        }
+        
         /* CTA */
         .cta {
             background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
@@ -753,6 +785,17 @@
                     <p>明日も素敵な一日になりますように！それでは、また明日お会いしましょう〜！ばいば〜い！</p>
                 </div>
             </div>
+        </div>
+        
+        <div class="audio-player">
+            <h3>
+                <span style="font-size: 28px;">🎧</span>
+                実際の音声を聴いてみる
+            </h3>
+            <audio controls>
+                <source src="sample.mp3" type="audio/mpeg">
+                お使いのブラウザは音声再生に対応していません。
+            </audio>
         </div>
     </section>
 
