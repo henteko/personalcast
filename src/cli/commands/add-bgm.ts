@@ -1,9 +1,7 @@
-#!/usr/bin/env node
-
 import { Command } from 'commander';
-import * as path from 'path';
+import { CheerCast } from '../../CheerCast';
 import * as fs from 'fs/promises';
-import { FFmpegService } from '../../services/ffmpeg/FFmpegService';
+import * as path from 'path';
 
 export interface AddBgmOptions {
   bgm: string;
@@ -18,15 +16,13 @@ export interface AddBgmOptions {
 }
 
 export class AddBgmCommand {
-  private ffmpegService: FFmpegService;
+  private cheerCast: CheerCast;
 
   constructor() {
-    this.ffmpegService = new FFmpegService();
+    this.cheerCast = new CheerCast();
   }
 
   async execute(options: AddBgmOptions): Promise<void> {
-    console.log('BGMを追加中...');
-
     try {
       // Validate input files
       await this.validateInputs(options);
@@ -34,10 +30,8 @@ export class AddBgmCommand {
       // Set default values
       const config = this.normalizeOptions(options);
 
-      console.log('BGMを処理中...');
-
-      // Add BGM using FFmpeg service
-      const outputPath = await this.ffmpegService.addBackgroundMusic(config.audio, config.bgm, {
+      // Add BGM using CheerCast
+      const outputPath = await this.cheerCast.addBackgroundMusic(config.audio, config.bgm, {
         output: config.output,
         bgmVolume: config.bgmVolume,
         ducking: config.ducking,
@@ -45,6 +39,7 @@ export class AddBgmCommand {
         fadeOut: config.fadeOut,
         intro: config.intro,
         outro: config.outro,
+        onProgress: (message: string) => console.log(message),
       });
 
       console.log('✓ BGMの追加が完了しました！');
@@ -147,10 +142,10 @@ export function createAddBgmCommand(): Command {
     .option('-o, --output <path>', '出力ファイルパス')
     .option('--bgm-volume <number>', 'BGMの基本音量 (0-1)', parseFloat)
     .option('--ducking <number>', '音声時のBGM音量低下率 (0-1)', parseFloat)
-    .option('--fade-in <seconds>', 'BGMフェードイン時間', parseFloat)
-    .option('--fade-out <seconds>', 'BGMフェードアウト時間', parseFloat)
-    .option('--intro <seconds>', 'BGMのみの導入時間', parseFloat)
-    .option('--outro <seconds>', 'BGMのみの終了時間', parseFloat)
+    .option('--fade-in <seconds>', 'フェードイン時間（秒）', parseFloat)
+    .option('--fade-out <seconds>', 'フェードアウト時間（秒）', parseFloat)
+    .option('--intro <seconds>', 'BGMのみの導入時間（秒）', parseFloat)
+    .option('--outro <seconds>', 'BGMのみの終了時間（秒）', parseFloat)
     .action(async (options: AddBgmOptions) => {
       const command = new AddBgmCommand();
       await command.execute(options);

@@ -183,6 +183,51 @@ export class CheerCast {
   }
 
   /**
+   * Add background music to existing audio file
+   */
+  async addBackgroundMusic(
+    audioPath: string,
+    bgmPath: string,
+    options: {
+      output?: string;
+      bgmVolume?: number;
+      ducking?: number;
+      fadeIn?: number;
+      fadeOut?: number;
+      intro?: number;
+      outro?: number;
+      onProgress?: (message: string) => void;
+    },
+  ): Promise<string> {
+    try {
+      options.onProgress?.('BGMを処理中...');
+
+      // Create temporary output file to avoid FFmpeg in-place editing error
+      const tempOutput = (options.output ?? audioPath).replace('.mp3', '_temp_bgm.mp3');
+
+      const outputPath = await this.ffmpegService.addBackgroundMusic(audioPath, bgmPath, {
+        output: tempOutput,
+        bgmVolume: options.bgmVolume,
+        ducking: options.ducking,
+        fadeIn: options.fadeIn,
+        fadeOut: options.fadeOut,
+        intro: options.intro,
+        outro: options.outro,
+      });
+
+      // If we're overwriting the original file, rename the temp file
+      if (!options.output || options.output === audioPath) {
+        await fs.rename(tempOutput, audioPath);
+        return audioPath;
+      }
+
+      return outputPath;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  /**
    * Combine multiple memos into one for weekly summary
    */
   private combineMemos(memos: ParsedMemo[]): ParsedMemo {

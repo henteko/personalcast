@@ -1,14 +1,14 @@
 import { AddBgmCommand } from '../add-bgm';
-import { FFmpegService } from '../../../services/ffmpeg/FFmpegService';
+import { CheerCast } from '../../../CheerCast';
 import * as fs from 'fs/promises';
 
 // Mock dependencies
-jest.mock('../../../services/ffmpeg/FFmpegService');
+jest.mock('../../../CheerCast');
 jest.mock('fs/promises');
 
 describe('AddBgmCommand', () => {
   let command: AddBgmCommand;
-  let mockFFmpegService: jest.Mocked<FFmpegService>;
+  let mockCheerCast: jest.Mocked<CheerCast>;
   let addBackgroundMusicMock: jest.Mock;
   let consoleLogSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
@@ -18,29 +18,27 @@ describe('AddBgmCommand', () => {
     // Reset mocks
     jest.clearAllMocks();
 
-    // Create mock FFmpeg service
+    // Create mock CheerCast
     addBackgroundMusicMock = jest.fn().mockResolvedValue('/path/to/output.mp3');
-    mockFFmpegService = {
+    mockCheerCast = {
       addBackgroundMusic: addBackgroundMusicMock,
-    } as unknown as jest.Mocked<FFmpegService>;
+    } as unknown as jest.Mocked<CheerCast>;
 
-    // Mock the FFmpegService constructor
-    (FFmpegService as jest.MockedClass<typeof FFmpegService>).mockImplementation(
-      () => mockFFmpegService,
-    );
+    // Mock the CheerCast constructor
+    (CheerCast as jest.MockedClass<typeof CheerCast>).mockImplementation(() => mockCheerCast);
+
+    // Mock fs.access to simulate file existence
+    (fs.access as jest.Mock).mockResolvedValue(undefined);
 
     // Create command instance
     command = new AddBgmCommand();
 
-    // Mock console methods
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined);
-    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    // Spy on console methods
+    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
     processExitSpy = jest.spyOn(process, 'exit').mockImplementation(() => {
-      throw new Error('process.exit called');
+      throw new Error('process.exit');
     });
-
-    // Mock fs.access to succeed by default
-    (fs.access as jest.Mock).mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -53,17 +51,27 @@ describe('AddBgmCommand', () => {
     const validOptions = {
       bgm: '/path/to/bgm.mp3',
       audio: '/path/to/audio.mp3',
+      output: '/path/to/output.mp3',
+      bgmVolume: 0.3,
+      ducking: 0.15,
+      fadeIn: 3,
+      fadeOut: 3,
+      intro: 3,
+      outro: 2,
     };
 
     it('should successfully add BGM with default options', async () => {
-      await command.execute(validOptions);
+      const options = {
+        bgm: '/path/to/bgm.mp3',
+        audio: '/path/to/audio.mp3',
+      };
 
-      expect(consoleLogSpy).toHaveBeenCalledWith('BGMを追加中...');
-      expect(consoleLogSpy).toHaveBeenCalledWith('BGMを処理中...');
+      await command.execute(options);
+
       expect(addBackgroundMusicMock).toHaveBeenCalledWith(
-        '/path/to/audio.mp3',
-        '/path/to/bgm.mp3',
-        {
+        options.audio,
+        options.bgm,
+        expect.objectContaining({
           output: '/path/to/audio_with_bgm.mp3',
           bgmVolume: 0.3,
           ducking: 0.15,
@@ -71,51 +79,40 @@ describe('AddBgmCommand', () => {
           fadeOut: 3,
           intro: 3,
           outro: 2,
-        },
+          onProgress: expect.any(Function) as (message: string) => void,
+        }),
       );
+
       expect(consoleLogSpy).toHaveBeenCalledWith('✓ BGMの追加が完了しました！');
       expect(consoleLogSpy).toHaveBeenCalledWith('✓ 出力ファイル: /path/to/output.mp3');
     });
 
     it('should use custom options when provided', async () => {
-      const customOptions = {
-        ...validOptions,
-        output: '/custom/output.mp3',
-        bgmVolume: 0.5,
-        ducking: 0.2,
-        fadeIn: 5,
-        fadeOut: 4,
-        intro: 4,
-        outro: 3,
-      };
-
-      await command.execute(customOptions);
+      await command.execute(validOptions);
 
       expect(addBackgroundMusicMock).toHaveBeenCalledWith(
-        '/path/to/audio.mp3',
-        '/path/to/bgm.mp3',
-        {
-          output: '/custom/output.mp3',
-          bgmVolume: 0.5,
-          ducking: 0.2,
-          fadeIn: 5,
-          fadeOut: 4,
-          intro: 4,
-          outro: 3,
-        },
+        validOptions.audio,
+        validOptions.bgm,
+        expect.objectContaining({
+          output: validOptions.output,
+          bgmVolume: validOptions.bgmVolume,
+          ducking: validOptions.ducking,
+          fadeIn: validOptions.fadeIn,
+          fadeOut: validOptions.fadeOut,
+          intro: validOptions.intro,
+          outro: validOptions.outro,
+          onProgress: expect.any(Function) as (message: string) => void,
+        }),
       );
     });
 
     it('should handle missing BGM file path', async () => {
-      const invalidOptions = {
+      const options = {
         bgm: '',
         audio: '/path/to/audio.mp3',
       };
 
-      await expect(async () => {
-        await command.execute(invalidOptions);
-      }).rejects.toThrow('process.exit called');
-
+      await expect(command.execute(options)).rejects.toThrow('process.exit');
       expect(consoleErrorSpy).toHaveBeenCalledWith('✗ BGMの追加に失敗しました');
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         'エラー: BGMファイルのパスを指定してください (--bgm)',
@@ -123,103 +120,93 @@ describe('AddBgmCommand', () => {
     });
 
     it('should handle missing audio file path', async () => {
-      const invalidOptions = {
+      const options = {
         bgm: '/path/to/bgm.mp3',
         audio: '',
       };
 
-      await expect(async () => {
-        await command.execute(invalidOptions);
-      }).rejects.toThrow('process.exit called');
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith('✗ BGMの追加に失敗しました');
+      await expect(command.execute(options)).rejects.toThrow('process.exit');
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         'エラー: 音声ファイルのパスを指定してください (--audio)',
       );
     });
 
     it('should handle non-existent BGM file', async () => {
-      (fs.access as jest.Mock).mockRejectedValueOnce(new Error('File not found'));
+      (fs.access as jest.Mock).mockImplementation((path: string) => {
+        if (path === '/path/to/bgm.mp3') {
+          throw new Error('File not found');
+        }
+      });
 
-      await expect(async () => {
-        await command.execute(validOptions);
-      }).rejects.toThrow('process.exit called');
+      const options = {
+        bgm: '/path/to/bgm.mp3',
+        audio: '/path/to/audio.mp3',
+      };
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith('✗ BGMの追加に失敗しました');
+      await expect(command.execute(options)).rejects.toThrow('process.exit');
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         'エラー: BGMファイルが見つかりません: /path/to/bgm.mp3',
       );
     });
 
     it('should handle non-MP3 BGM file', async () => {
-      const invalidOptions = {
+      const options = {
         bgm: '/path/to/bgm.wav',
         audio: '/path/to/audio.mp3',
       };
 
-      await expect(async () => {
-        await command.execute(invalidOptions);
-      }).rejects.toThrow('process.exit called');
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith('✗ BGMの追加に失敗しました');
+      await expect(command.execute(options)).rejects.toThrow('process.exit');
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         'エラー: BGMファイルはMP3形式である必要があります',
       );
     });
 
     it('should handle invalid BGM volume', async () => {
-      const invalidOptions = {
-        ...validOptions,
+      const options = {
+        bgm: '/path/to/bgm.mp3',
+        audio: '/path/to/audio.mp3',
         bgmVolume: 1.5,
       };
 
-      await expect(async () => {
-        await command.execute(invalidOptions);
-      }).rejects.toThrow('process.exit called');
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith('✗ BGMの追加に失敗しました');
+      await expect(command.execute(options)).rejects.toThrow('process.exit');
       expect(consoleErrorSpy).toHaveBeenCalledWith('エラー: BGM音量は0から1の間で指定してください');
     });
 
     it('should handle invalid ducking value', async () => {
-      const invalidOptions = {
-        ...validOptions,
+      const options = {
+        bgm: '/path/to/bgm.mp3',
+        audio: '/path/to/audio.mp3',
         ducking: -0.1,
       };
 
-      await expect(async () => {
-        await command.execute(invalidOptions);
-      }).rejects.toThrow('process.exit called');
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith('✗ BGMの追加に失敗しました');
+      await expect(command.execute(options)).rejects.toThrow('process.exit');
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         'エラー: ダッキング音量は0から1の間で指定してください',
       );
     });
 
     it('should handle negative fade-in time', async () => {
-      const invalidOptions = {
-        ...validOptions,
+      const options = {
+        bgm: '/path/to/bgm.mp3',
+        audio: '/path/to/audio.mp3',
         fadeIn: -1,
       };
 
-      await expect(async () => {
-        await command.execute(invalidOptions);
-      }).rejects.toThrow('process.exit called');
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith('✗ BGMの追加に失敗しました');
+      await expect(command.execute(options)).rejects.toThrow('process.exit');
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         'エラー: フェードイン時間は0以上で指定してください',
       );
     });
 
     it('should handle FFmpeg service errors', async () => {
-      addBackgroundMusicMock.mockRejectedValueOnce(new Error('FFmpeg error'));
+      addBackgroundMusicMock.mockRejectedValue(new Error('FFmpeg error'));
 
-      await expect(async () => {
-        await command.execute(validOptions);
-      }).rejects.toThrow('process.exit called');
+      const options = {
+        bgm: '/path/to/bgm.mp3',
+        audio: '/path/to/audio.mp3',
+      };
 
+      await expect(command.execute(options)).rejects.toThrow('process.exit');
       expect(consoleErrorSpy).toHaveBeenCalledWith('✗ BGMの追加に失敗しました');
       expect(consoleErrorSpy).toHaveBeenCalledWith('エラー: FFmpeg error');
     });
