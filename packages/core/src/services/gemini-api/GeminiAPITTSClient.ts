@@ -66,8 +66,8 @@ export class GeminiAPITTSClient {
       }
 
       // Find the audio part
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const audioPart = candidate.content.parts.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (part: any): part is AudioPart => !!(part as AudioPart).inlineData?.mimeType?.includes('audio'),
       );
 
@@ -137,8 +137,8 @@ export class GeminiAPITTSClient {
       }
 
       // Find the audio part
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const audioPart = candidate.content.parts.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (part: any): part is AudioPart => !!(part as AudioPart).inlineData?.mimeType?.includes('audio'),
       );
 

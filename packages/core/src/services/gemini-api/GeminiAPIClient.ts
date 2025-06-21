@@ -9,7 +9,7 @@ export interface GeminiAPIClientConfig {
 
 export interface ResponseSchema {
   type: string;
-  properties?: Record<string, any>;
+  properties?: Record<string, unknown>;
   required?: string[];
 }
 
@@ -34,7 +34,7 @@ export class GeminiAPIClient {
 
   async generateContent(prompt: string, schema: ResponseSchema): Promise<string> {
     try {
-      const requestConfig: any = {
+      const requestConfig: Record<string, unknown> = {
         temperature: this.temperature,
         maxOutputTokens: 8192,
       };
@@ -42,7 +42,8 @@ export class GeminiAPIClient {
       requestConfig.responseSchema = schema;
       requestConfig.responseMimeType = 'application/json';
 
-      const response = await this.genAI.models.generateContent({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const response = await (this.genAI as any).models.generateContent({
         model: this.modelName,
         contents: prompt,
         config: requestConfig,
