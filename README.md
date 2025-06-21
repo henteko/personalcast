@@ -139,7 +139,7 @@ personalcast generate [options]
 |-----------|------|-----------|
 | `-i, --input <path>` | 入力ファイルまたはディレクトリのパス | (必須) |
 | `-o, --output <path>` | 出力ファイル名 | `news_YYYY-MM-DD.mp3` |
-| `-t, --type <type>` | 番組タイプ (daily/weekly) | `daily` |
+| `-t, --type <type>` | 番組タイプ | `daily` |
 | `-s, --style <style>` | 分析スタイル (analytical/comprehensive) | `analytical` |
 | `-d, --duration <minutes>` | 番組の長さ（分） | `10` |
 | `-b, --bgm <path>` | BGMファイルのパス | なし |
@@ -153,10 +153,6 @@ personalcast generate [options]
 personalcast generate -i today.txt -o today_news.mp3
 ```
 
-#### 週次サマリー生成
-```bash
-personalcast generate -i ./memos/ -t weekly -o weekly_summary.mp3
-```
 
 #### BGM付きニュース生成
 ```bash

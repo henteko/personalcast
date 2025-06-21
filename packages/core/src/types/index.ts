@@ -107,7 +107,6 @@ export interface AudioBuffer {
 
 export interface GenerationOptions {
   outputPath: string;
-  type?: 'daily' | 'weekly';
   style?: 'analytical' | 'comprehensive';
   duration?: number;
   voiceSpeed?: number;

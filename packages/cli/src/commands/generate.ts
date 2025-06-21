@@ -91,12 +91,8 @@ export async function executeGenerateCommand(options: GenerateOptions): Promise<
       };
     }
 
-    // Generate using PersonalCast based on input type
-    if (options.type === 'weekly') {
-      await personalCast.generateFromDirectoryWithCLIProgress(options.input, generationOptions);
-    } else {
-      await personalCast.generateFromFileWithCLIProgress(options.input, generationOptions);
-    }
+    // Generate using PersonalCast
+    await personalCast.generateFromFileWithCLIProgress(options.input, generationOptions);
 
   } catch (error) {
     console.error('❌ エラー:', error instanceof Error ? error.message : '不明なエラーが発生しました');

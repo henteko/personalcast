@@ -29,7 +29,7 @@ program
     '出力ファイル名',
     `news_${new Date().toISOString().split('T')[0]}.mp3`,
   )
-  .option('-t, --type <type>', '番組タイプ (daily|weekly)', 'daily')
+  .option('-t, --type <type>', '番組タイプ', 'daily')
   .option('-s, --style <style>', '分析スタイル (analytical|comprehensive)', 'analytical')
   .option('-d, --duration <minutes>', '番組の長さ（分）', '10')
   .option('-b, --bgm <path>', 'BGMファイルのパス')
@@ -46,7 +46,7 @@ program
   .command('preview')
   .description('台本のプレビューを表示（音声生成なし）')
   .requiredOption('-i, --input <path>', '入力ファイルまたはディレクトリのパス')
-  .option('-t, --type <type>', '番組タイプ (daily|weekly)', 'daily')
+  .option('-t, --type <type>', '番組タイプ', 'daily')
   .option('-s, --style <style>', '分析スタイル (analytical|comprehensive)', 'analytical')
   .action(previewCommand);
 

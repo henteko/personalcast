@@ -40,26 +40,6 @@ export class PersonalCast extends CorePersonalCast {
     }
   }
 
-  async generateFromDirectoryWithCLIProgress(directoryPath: string, options: CLIGenerationOptions) {
-    console.log('🎙️ PersonalCast (週次サマリー) を開始します...');
-    
-    const cliProgressHandler = (message: string) => {
-      console.log(`📋 ${message}`);
-    };
-
-    try {
-      await this.generateFromDirectory(directoryPath, {
-        ...options,
-        onProgress: cliProgressHandler
-      });
-      
-      console.log('✅ 週次サマリーの生成が完了しました！');
-      console.log(`📁 出力ファイル: ${options.outputPath}`);
-    } catch (error) {
-      console.error('❌ 生成に失敗しました:', error instanceof Error ? error.message : String(error));
-      throw error;
-    }
-  }
 
   async previewScriptWithCLI(filePath: string, options: Partial<CLIGenerationOptions>) {
     console.log('📝 台本をプレビューします...');

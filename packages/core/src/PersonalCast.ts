@@ -4,12 +4,9 @@ import { GeminiVoiceGenerator } from './voice/GeminiVoiceGenerator';
 import { AudioMixer } from './mixer/AudioMixer';
 import { FFmpegService } from './services/ffmpeg/FFmpegService';
 import {
-  ParsedMemo,
   RadioScript,
   GenerationOptions,
   AnalysisStyle,
-  ActivityCategory,
-  MemoStatistics,
 } from './types';
 import * as fs from 'fs/promises';
 
@@ -96,66 +93,6 @@ export class PersonalCast {
     }
   }
 
-  /**
-   * Generate weekly summary from multiple memo files
-   */
-  async generateFromDirectory(directoryPath: string, options: GenerationOptions): Promise<void> {
-    try {
-      // Parse all memos in directory
-      options.onProgress?.('メモファイルを解析中...');
-      const memos = await this.memoParser.parseDirectory(directoryPath);
-
-      // Combine memos for weekly summary
-      const combinedMemo = this.combineMemos(memos);
-
-      // Generate script
-      options.onProgress?.('ニュース台本を生成中...');
-      const script = await this.scriptGenerator.generateScript(combinedMemo, {
-        style: options.style as AnalysisStyle | undefined,
-        duration: options.duration,
-      });
-
-      // Generate speech
-      options.onProgress?.('音声を生成中...');
-      const audioBuffers = await this.voiceGenerator.generateSpeech(script, {
-        speed: options.voiceSpeed,
-      });
-
-      // Combine audio
-      options.onProgress?.('音声を結合中...');
-      let finalAudio = await this.audioMixer.combineAudio(audioBuffers);
-
-      // Normalize volume
-      options.onProgress?.('音声を正規化してエクスポート中...');
-      finalAudio = await this.audioMixer.normalizeVolume(finalAudio);
-
-      // Export to file
-      await this.audioMixer.exportToMP3(finalAudio, options.outputPath);
-
-      // Add BGM if specified
-      if (options.bgm) {
-        options.onProgress?.('BGMを追加中...');
-        // Create temporary output file to avoid FFmpeg in-place editing error
-        const tempOutput = options.outputPath.replace('.mp3', '_temp_bgm.mp3');
-
-        await this.ffmpegService.addBackgroundMusic(options.outputPath, options.bgm.path, {
-          output: tempOutput,
-          bgmVolume: options.bgm.volume,
-          ducking: options.bgm.ducking,
-          fadeIn: options.bgm.fadeIn,
-          fadeOut: options.bgm.fadeOut,
-          intro: options.bgm.intro,
-          outro: options.bgm.outro,
-        });
-
-        // Replace original file with BGM version
-        await fs.rename(tempOutput, options.outputPath);
-        options.onProgress?.('BGMの追加が完了しました');
-      }
-    } catch (error) {
-      throw error;
-    }
-  }
 
   /**
    * Preview script without generating audio
@@ -171,23 +108,6 @@ export class PersonalCast {
     });
   }
 
-  /**
-   * Preview weekly script without generating audio
-   */
-  async previewWeeklyScript(
-    directoryPath: string,
-    options: Partial<GenerationOptions>,
-  ): Promise<RadioScript> {
-    options.onProgress?.('メモファイルを解析中...');
-    const memos = await this.memoParser.parseDirectory(directoryPath);
-    const combinedMemo = this.combineMemos(memos);
-
-    options.onProgress?.('ラジオ台本を生成中...');
-    return this.scriptGenerator.generateScript(combinedMemo, {
-      style: options.style as AnalysisStyle | undefined,
-      duration: options.duration,
-    });
-  }
 
   /**
    * Add background music to existing audio file
@@ -234,82 +154,4 @@ export class PersonalCast {
     }
   }
 
-  /**
-   * Combine multiple memos into one for weekly summary
-   */
-  private combineMemos(memos: ParsedMemo[]): ParsedMemo {
-    // Sort by date
-    const sortedMemos = memos.sort((a, b) => a.date.getTime() - b.date.getTime());
-
-    // Get date range
-    const startDate = sortedMemos[0]?.date || new Date();
-    const endDate = sortedMemos[sortedMemos.length - 1]?.date || new Date();
-
-    // Combine all activities
-    const allActivities = sortedMemos.flatMap((memo) => memo.activities);
-
-    // Combine all positive elements
-    const allPositiveElements = sortedMemos.flatMap((memo) => memo.positiveElements);
-
-    // Generate combined statistics
-    const statistics = this.generateCombinedStatistics(allActivities, sortedMemos);
-
-    return {
-      date: endDate,
-      dateRange: { start: startDate, end: endDate },
-      activities: allActivities,
-      positiveElements: [...new Set(allPositiveElements)], // Remove duplicates
-      summary: `${startDate.toLocaleDateString('ja-JP')} から ${endDate.toLocaleDateString('ja-JP')} までの活動`,
-      statistics,
-    };
-  }
-
-  private generateCombinedStatistics(
-    activities: ParsedMemo['activities'],
-    memos: ParsedMemo[],
-  ): MemoStatistics {
-    // Calculate category counts
-    const categoryCounts: Record<ActivityCategory, number> = {
-      [ActivityCategory.WORK]: 0,
-      [ActivityCategory.LEARNING]: 0,
-      [ActivityCategory.HEALTH]: 0,
-      [ActivityCategory.PERSONAL]: 0,
-      [ActivityCategory.OTHER]: 0,
-    };
-
-    activities.forEach((activity) => {
-      categoryCounts[activity.category]++;
-    });
-
-    // Calculate top categories with percentages
-    const totalActivities = activities.length;
-    const topCategories = Object.entries(categoryCounts)
-      .filter(([, count]) => count > 0)
-      .map(([category, count]) => ({
-        category: category as ActivityCategory,
-        count,
-        percentage: totalActivities > 0 ? Math.round((count / totalActivities) * 100) : 0,
-      }))
-      .sort((a, b) => b.count - a.count);
-
-    // Aggregate keywords from all memos
-    const allKeywords: Record<string, number> = {};
-    memos.forEach((memo) => {
-      memo.statistics?.keywords?.forEach((kw) => {
-        allKeywords[kw.word] = (allKeywords[kw.word] || 0) + kw.count;
-      });
-    });
-
-    const keywords = Object.entries(allKeywords)
-      .map(([word, count]) => ({ word, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 15); // Top 15 keywords for weekly summary
-
-    return {
-      totalActivities,
-      categoryCounts,
-      topCategories,
-      keywords,
-    };
-  }
 }

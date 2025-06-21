@@ -41,14 +41,9 @@ export async function previewCommand(options: PreviewOptions): Promise<void> {
     const personalCast = new PersonalCast();
 
     // Generate script using PersonalCast
-    const script =
-      options.type === 'weekly'
-        ? await personalCast.previewWeeklyScript(options.input, {
-            style: options.style as 'analytical' | 'comprehensive',
-          })
-        : await personalCast.previewScriptWithCLI(options.input, {
-            style: options.style as 'analytical' | 'comprehensive',
-          });
+    const script = await personalCast.previewScriptWithCLI(options.input, {
+      style: options.style as 'analytical' | 'comprehensive',
+    });
 
     // Display script
     console.log('='.repeat(60));

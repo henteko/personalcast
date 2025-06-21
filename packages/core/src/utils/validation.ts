@@ -39,7 +39,7 @@ export async function validateInputPath(inputPath: string): Promise<ValidationRe
 }
 
 export function validateProgramType(type: string): ValidationResult {
-  const validTypes = ['daily', 'weekly'];
+  const validTypes = ['daily'];
 
   if (!validTypes.includes(type)) {
     return {
