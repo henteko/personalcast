@@ -31,15 +31,21 @@ PersonalCastをGoogle Cloud Run上でWebアプリケーションとして動作�
    - 分析進捗表示
    - レポートプレイヤー
 
-2. **バックエンドAPI (Cloud Run)**
-   - REST API エンドポイント
+2. **バックエンドAPI**
+   - REST API エンドポイント（Express.js）
    - 非同期処理対応
    - ファイルアップロード/ダウンロード
+   - **ローカル開発**: Node.jsサーバー
+   - **本番環境**: Cloud Run
 
-3. **ストレージ (Cloud Storage)**
-   - 一時ファイル保存
-   - 生成済みMP3ファイル保存
-   - 有効期限付きURL生成
+3. **ストレージ**
+   - **ローカル開発**: ローカルファイルシステム
+     - ./temp/ ディレクトリに一時ファイル
+     - ./output/ ディレクトリに生成ファイル
+   - **本番環境**: Cloud Storage
+     - 一時ファイル保存
+     - 生成済みMP3ファイル保存
+     - 有効期限付きURL生成
 
 ## 機能要件
 
@@ -64,9 +70,6 @@ PersonalCastをGoogle Cloud Run上でWebアプリケーションとして動作�
 
 ```typescript
 interface GenerationOptions {
-  // プログラムタイプ
-  programType: 'daily' | 'weekly';
-  
   // 分析スタイル
   analysisStyle: 'analytical' | 'comprehensive';
   
@@ -143,9 +146,7 @@ interface PlaybackView {
 
 **表示項目**:
 - **活動サマリー**: 総活動数、カテゴリー別分布
-- **時系列グラフ**: 日別・時間別の活動パターン
 - **キーワードクラウド**: 頻出キーワードの視覚化
-- **進捗トラッキング**: 継続的な取り組みの可視化
 
 ```typescript
 interface StatisticsData {
@@ -158,10 +159,6 @@ interface StatisticsData {
     other: number;
   };
   topKeywords: Array<{ word: string; count: number }>;
-  continuityMetrics: {
-    streaks: Array<{ activity: string; days: number }>;
-    completionRate: number;
-  };
 }
 ```
 
@@ -177,7 +174,6 @@ Content-Type: application/json
 {
   "activityLog": "【業務活動】\n- TypeScript移行タスク2件完了...",
   "options": {
-    "programType": "daily",
     "analysisStyle": "analytical",
     "duration": 5
   }
@@ -197,7 +193,7 @@ POST /api/analyze/upload
 Content-Type: multipart/form-data
 
 activityLog: (file)
-options: {"programType": "daily", ...}
+options: {"analysisStyle": "analytical", ...}
 
 Response:
 {
@@ -243,13 +239,7 @@ Response:
       { "word": "TypeScript", "count": 4 },
       { "word": "プロジェクト", "count": 3 },
       { "word": "完了", "count": 3 }
-    ],
-    "continuityMetrics": {
-      "streaks": [
-        { "activity": "朝のランニング", "days": 5 }
-      ],
-      "completionRate": 100
-    }
+    ]
   }
 }
 ```
@@ -365,32 +355,51 @@ Response:
 
 ## 実装フェーズ
 
-### Phase 1: MVP (2-3週間)
+### Phase 1: ローカル環境での完全動作 (2-3週間)
 
 1. **基本Web UI**
    - シンプルな入力フォーム
    - 生成ボタン
    - 結果表示
 
-2. **同期API**
-   - 単純な分析エンドポイント
-   - タイムアウト対応
+2. **ローカルAPI**
+   - Express.jsでのAPIサーバー
+   - ローカルファイルシステムでの一時ファイル管理
+   - 同期的な分析処理
 
-3. **Cloud Run デプロイ**
+3. **ローカル開発環境**
+   - 開発サーバー (npm run dev)
+   - ホットリロード対応
+   - ローカルストレージでのデータ保存
+
+### Phase 2: 非同期処理対応 (1週間)
+
+1. **ローカルジョブキュー**
+   - Bull.jsなどでのローカルキュー実装
+   - 進捗通知（WebSocket/SSE）
+   - ローカルでの非同期処理
+
+2. **ローカルストレージ**
+   - ファイルシステムベースの一時ファイル管理
+   - 生成済みファイルの管理
+
+### Phase 3: Cloud Run移行 (2週間)
+
+1. **クラウド対応**
    - Dockerfile作成
-   - 基本的なCI/CD
+   - Cloud Storage統合（ローカルファイルシステムからの移行）
+   - Cloud Tasks統合（ローカルキューからの移行）
 
-### Phase 2: 非同期処理 (2週間)
+2. **環境切り替え**
+   - 環境変数によるローカル/クラウドの切り替え
+   - ローカル開発時はファイルシステム使用
+   - 本番環境ではCloud Storage使用
 
-1. **ジョブ管理**
-   - Cloud Tasks統合
-   - 進捗通知
+3. **CI/CD**
+   - GitHub Actions設定
+   - 自動デプロイ
 
-2. **ストレージ統合**
-   - Cloud Storage連携
-   - 一時ファイル管理
-
-### Phase 3: UX改善 (2週間)
+### Phase 4: UX改善 (1週間)
 
 1. **リッチUI**
    - プログレスバー
@@ -398,16 +407,15 @@ Response:
    - 同期再生ビュー
 
 2. **データビジュアライゼーション**
-   - グラフ・チャート実装
+   - 活動サマリー（円グラフ）
    - キーワードクラウド
-   - 時系列分析
 
 3. **共有機能**
    - 短縮URL
    - SNS共有
    - レポートのみ共有
 
-### Phase 4: スケール対応 (1週間)
+### Phase 5: スケール対応 (1週間)
 
 1. **パフォーマンス最適化**
    - キャッシュ実装
@@ -458,9 +466,8 @@ graph LR
 - **下部**: 「統計を見る」ボタン（分析完成後に有効化）
 
 #### 統計ダッシュボード画面
-- **グラフエリア**: 円グラフ、棒グラフで活動分布表示
-- **キーワード**: ワードクラウド形式
-- **継続指標**: ストリークカウンター
+- **活動サマリー**: カテゴリー別分布を円グラフで表示
+- **キーワードクラウド**: 頻出キーワードをワードクラウド形式で表示
 - **下部**: 「レポートを聴く」「入力に戻る」ボタン
 
 #### 再生画面
@@ -537,6 +544,48 @@ graph LR
 }
 ```
 
+## 開発アプローチ
+
+### ローカルファースト開発
+
+開発は以下の原則に従って進めます：
+
+1. **すべての機能をまずローカルで完全動作させる**
+   - ローカルファイルシステムでのファイル管理
+   - ローカルサーバーでのAPI実装
+   - 外部サービス（Cloud Storage、Cloud Tasks）への依存なし
+
+2. **環境変数による動作切り替え**
+   ```typescript
+   // 環境設定の例
+   const config = {
+     storage: process.env.USE_CLOUD_STORAGE === 'true' 
+       ? 'cloud' : 'local',
+     queue: process.env.USE_CLOUD_TASKS === 'true'
+       ? 'cloud' : 'local',
+     port: process.env.PORT || 3000
+   };
+   ```
+
+3. **インターフェースの統一**
+   ```typescript
+   // ストレージインターフェース
+   interface StorageAdapter {
+     save(path: string, data: Buffer): Promise<string>;
+     load(path: string): Promise<Buffer>;
+     delete(path: string): Promise<void>;
+   }
+   
+   // ローカル実装とクラウド実装を切り替え可能
+   class LocalStorageAdapter implements StorageAdapter { /* ... */ }
+   class CloudStorageAdapter implements StorageAdapter { /* ... */ }
+   ```
+
+4. **段階的なクラウド移行**
+   - Phase 1: 完全にローカルで動作
+   - Phase 2: オプションでクラウドサービスを使用可能
+   - Phase 3: 本番環境でクラウドサービスを使用
+
 ## 技術的な考慮事項
 
 ### 1. コンテナ化
@@ -570,23 +619,34 @@ env_variables:
 
 ### 3. 既存コードの変更点
 
-1. **ファイルI/O**
-   - ローカルファイル読み書き → Cloud Storage API
-   - 一時ファイル → メモリバッファ or Cloud Storage
+1. **段階的な移行アプローチ**
+   - Phase 1: 既存のCLIコードをそのまま活用
+   - Phase 2: Web API経由で既存コードを呼び出し
+   - Phase 3: クラウド環境に適応
 
-2. **設定管理**
-   - personalcast.config.json → 環境変数
-   - デフォルト設定のハードコード
+2. **ファイルI/O（環境による切り替え）**
+   ```typescript
+   // 環境変数で切り替え
+   const storage = process.env.NODE_ENV === 'production' 
+     ? new CloudStorageAdapter() 
+     : new LocalFileSystemAdapter();
+   ```
 
-3. **エラーハンドリング**
+3. **設定管理**
+   - ローカル: personalcast.config.json使用可能
+   - 本番: 環境変数から読み込み
+   - デフォルト設定の共通化
+
+4. **エラーハンドリング**
    - process.exit() → HTTPエラーレスポンス
-   - コンソールログ → 構造化ログ
+   - コンソールログ → 構造化ログ（環境に応じて）
 
-4. **非同期処理**
-   - 同期的な生成 → Promise/async-await
-   - 長時間処理 → ジョブキュー
+5. **非同期処理**
+   - ローカル: 同期的処理 or ローカルキュー
+   - 本番: Cloud Tasks
+   - 共通インターフェースで抽象化
 
-5. **レポートタイミング情報**
+6. **レポートタイミング情報**
    - 各セクションの開始/終了時刻を計算
    - 音声ファイルのメタデータ抽出
    - タイムスタンプとの同期
@@ -689,7 +749,6 @@ PersonalCastのCloud Run化により、以下のメリットが期待できま�
 
 2. **データドリブンな体験**
    - 活動の可視化による気づきの提供
-   - 継続的な取り組みのトラッキング
    - 客観的なデータに基づく分析
 
 3. **インタラクティブな再生体験**
