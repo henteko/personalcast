@@ -71,11 +71,13 @@ npm run build
 ### CLIツールの使用
 
 ```bash
-# 開発モード
-npm run dev:cli
+cd packages/cli
 
-# ビルド済みCLIの実行
-node packages/cli/dist/index.js
+# 開発モード
+npm run dev
+
+# CLIインストール
+npm link
 ```
 
 ## ⚙️ 設定
