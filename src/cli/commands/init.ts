@@ -84,16 +84,26 @@ DEFAULT_STYLE=analytical`;
 
     // Create sample memo
     const sampleMemoPath = path.join(process.cwd(), 'sample_memo.txt');
-    const sampleMemo = `2024-01-20 の日記
+    const sampleMemo = `2024-01-20 の活動記録
 
-今日は新しいプロジェクトの設計を完了させた。
-午前中は要件定義の見直しに時間をかけて、より良い設計ができたと思う。
+【業務活動】
+- 新規プロジェクトの要件定義レビューを完了
+- 設計ドキュメントを作成し、チームで共有
+- TypeScriptでの実装を開始（進捗: 約30%）
+- コードレビューを2件実施
 
-午後からはコーディングを開始。TypeScriptの型定義で少し悩んだけど、
-ドキュメントを読んで解決できた。
+【学習・研究】
+- TypeScriptの高度な型システムについて学習（2時間）
+- 技術記事を3本読了（テーマ: マイクロサービス、CI/CD、クリーンアーキテクチャ）
 
-夕方には30分のウォーキングも達成！
-明日も頑張ろう。`;
+【健康・運動】
+- 昼休みに30分のウォーキングを実施
+- 歩数: 7,250歩
+
+【本日の成果】
+- 重要タスクの完了率: 100%
+- 新たに習得したスキル: TypeScriptの条件型
+- 継続的な取り組み: 毎日のウォーキング（5日連続達成）`;
 
     await fs.writeFile(sampleMemoPath, sampleMemo);
     console.log('✅ sample_memo.txt を作成しました');

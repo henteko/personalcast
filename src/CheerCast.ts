@@ -3,7 +3,14 @@ import { ScriptGenerator } from './core/generator/ScriptGenerator';
 import { GeminiVoiceGenerator } from './core/voice/GeminiVoiceGenerator';
 import { AudioMixer } from './core/mixer/AudioMixer';
 import { FFmpegService } from './services/ffmpeg/FFmpegService';
-import { ParsedMemo, RadioScript, GenerationOptions, AnalysisStyle } from './types';
+import {
+  ParsedMemo,
+  RadioScript,
+  GenerationOptions,
+  AnalysisStyle,
+  ActivityCategory,
+  MemoStatistics,
+} from './types';
 import * as fs from 'fs/promises';
 
 export class CheerCast {
@@ -244,12 +251,65 @@ export class CheerCast {
     // Combine all positive elements
     const allPositiveElements = sortedMemos.flatMap((memo) => memo.positiveElements);
 
+    // Generate combined statistics
+    const statistics = this.generateCombinedStatistics(allActivities, sortedMemos);
+
     return {
       date: endDate,
       dateRange: { start: startDate, end: endDate },
       activities: allActivities,
       positiveElements: [...new Set(allPositiveElements)], // Remove duplicates
       summary: `${startDate.toLocaleDateString('ja-JP')} から ${endDate.toLocaleDateString('ja-JP')} までの活動`,
+      statistics,
+    };
+  }
+
+  private generateCombinedStatistics(
+    activities: ParsedMemo['activities'],
+    memos: ParsedMemo[],
+  ): MemoStatistics {
+    // Calculate category counts
+    const categoryCounts: Record<ActivityCategory, number> = {
+      [ActivityCategory.WORK]: 0,
+      [ActivityCategory.LEARNING]: 0,
+      [ActivityCategory.HEALTH]: 0,
+      [ActivityCategory.PERSONAL]: 0,
+      [ActivityCategory.OTHER]: 0,
+    };
+
+    activities.forEach((activity) => {
+      categoryCounts[activity.category]++;
+    });
+
+    // Calculate top categories with percentages
+    const totalActivities = activities.length;
+    const topCategories = Object.entries(categoryCounts)
+      .filter(([_, count]) => count > 0)
+      .map(([category, count]) => ({
+        category: category as ActivityCategory,
+        count,
+        percentage: totalActivities > 0 ? Math.round((count / totalActivities) * 100) : 0,
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    // Aggregate keywords from all memos
+    const allKeywords: Record<string, number> = {};
+    memos.forEach((memo) => {
+      memo.statistics?.keywords?.forEach((kw) => {
+        allKeywords[kw.word] = (allKeywords[kw.word] || 0) + kw.count;
+      });
+    });
+
+    const keywords = Object.entries(allKeywords)
+      .map(([word, count]) => ({ word, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 15); // Top 15 keywords for weekly summary
+
+    return {
+      totalActivities,
+      categoryCounts,
+      topCategories,
+      keywords,
     };
   }
 }

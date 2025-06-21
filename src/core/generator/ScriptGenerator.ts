@@ -60,47 +60,59 @@ export class ScriptGenerator {
 
     const positiveElementsText = memo.positiveElements.map((element) => `- ${element}`).join('\n');
 
+    // Calculate activity statistics
+    const activityCount = memo.activities.length;
+
     const radioShowName = config.get().radioShowName ?? 'CheerCast';
 
-    return `あなたは2人のニュースキャスターです。
-以下の設定で、ユーザーの今日の活動を分析・報告するニュース番組「${radioShowName}」の台本を作成してください。
+    return `あなたはプロフェッショナルなニュース番組のキャスターです。
+ユーザーのパーソナルデータを分析し、本日の活動レポートを作成してください。
+
+【番組情報】
+番組名: ${radioShowName}
+放送日: ${memo.date.toLocaleDateString('ja-JP')}
 
 【キャスター設定】
-1. ${personalities.host1.name}（女性）: ${personalities.host1.character}
-2. ${personalities.host2.name}（男性）: ${personalities.host2.character}
+1. ${personalities.host1.name}（メインキャスター）: ${personalities.host1.character}
+2. ${personalities.host2.name}（コメンテーター）: ${personalities.host2.character}
 
-【分析スタイル】
-${styleDescription}分析してください。
+【分析方針】
+${styleDescription}、データに基づいた客観的な分析を行ってください。
 
-【今日の活動】
+【本日の活動データ】
+総活動数: ${activityCount}件
 ${activitiesText}
 
-【ポジティブな要素】
+【注目ポイント】
 ${positiveElementsText}
 
 【台本の構成】
 必ず以下の3つのセクションで構成してください：
 
 [オープニング]
-- 挨拶と番組「${radioShowName}」の紹介
-- 本日のトップニュースの概要
+- 番組開始の挨拶
+- 「${radioShowName}」の紹介（ユーザーの日々の活動を分析するパーソナルニュース番組）
+- 本日のハイライト（最も重要な3つの活動を簡潔に紹介）
 
 [メイン]
-- 具体的な活動の分析
-- 成果とその意義の評価
-- 活動のトレンドとパターン
+- トップニュース: 最も重要な活動の詳細分析
+- カテゴリー別分析: 仕事、学習、健康などのバランス
+- 成果評価: 達成したこととその意義
+- 継続性分析: 継続的な取り組みやパターン
 
 [エンディング]
-- 本日のまとめ
-- 明日の注目ポイント
-- 締めの挨拶
+- 本日の総括（データに基づいた客観的な評価）
+- 明日の予測・提言
+- 番組終了の挨拶
 
 【重要な注意事項】
 - 各セクションは[セクション名]で始めてください
 - 各発言は「${personalities.host1.name}: 」または「${personalities.host2.name}: 」で始めてください
-- 自然な会話のキャッチボールを心がけてください
-- 具体的な活動内容に言及してください
-- 客観的でプロフェッショナルな内容にしてください
+- ニュース番組としてのプロフェッショナルなトーンを保つ
+- データや事実に基づいた客観的な分析を行う
+- 具体的な数値や統計を交えた報告をする
+- キャスター間での役割分担を明確に（メインキャスターが主導、コメンテーターが補足・深掘り）
+- リスナーにとって有益な洞察を提供する
 
 台本を作成してください：`;
   }

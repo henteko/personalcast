@@ -5,6 +5,15 @@ export interface ParsedMemo {
   activities: DailyActivity[];
   positiveElements: string[];
   summary?: string;
+  statistics?: MemoStatistics;
+}
+
+export interface MemoStatistics {
+  totalActivities: number;
+  categoryCounts: Record<ActivityCategory, number>;
+  topCategories: Array<{ category: ActivityCategory; count: number; percentage: number }>;
+  timeDistribution?: Record<string, number>;
+  keywords?: Array<{ word: string; count: number }>;
 }
 
 export interface DailyActivity {

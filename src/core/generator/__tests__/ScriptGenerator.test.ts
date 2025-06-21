@@ -114,6 +114,7 @@ describe('ScriptGenerator', () => {
       expect(prompt).toContain('[オープニング]');
       expect(prompt).toContain('[メイン]');
       expect(prompt).toContain('[エンディング]');
+      expect(prompt).toContain('プロフェッショナルなニュース番組');
     });
 
     it('should include all activities in the prompt', () => {

@@ -1,6 +1,6 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { ParsedMemo, DailyActivity, ActivityCategory } from '../../types';
+import { ParsedMemo, DailyActivity, ActivityCategory, MemoStatistics } from '../../types';
 
 export class MemoParser {
   private readonly supportedExtensions = ['.txt', '.md', '.json', '.csv'];
@@ -89,16 +89,97 @@ export class MemoParser {
     return ActivityCategory.OTHER;
   }
 
+  private generateStatistics(activities: DailyActivity[], content: string): MemoStatistics {
+    // Calculate category counts
+    const categoryCounts: Record<ActivityCategory, number> = {
+      [ActivityCategory.WORK]: 0,
+      [ActivityCategory.LEARNING]: 0,
+      [ActivityCategory.HEALTH]: 0,
+      [ActivityCategory.PERSONAL]: 0,
+      [ActivityCategory.OTHER]: 0,
+    };
+
+    activities.forEach((activity) => {
+      categoryCounts[activity.category]++;
+    });
+
+    // Calculate top categories with percentages
+    const totalActivities = activities.length;
+    const topCategories = Object.entries(categoryCounts)
+      .filter(([_, count]) => count > 0)
+      .map(([category, count]) => ({
+        category: category as ActivityCategory,
+        count,
+        percentage: totalActivities > 0 ? Math.round((count / totalActivities) * 100) : 0,
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    // Extract keywords (nouns) from content
+    const keywords = this.extractKeywords(content);
+
+    return {
+      totalActivities,
+      categoryCounts,
+      topCategories,
+      keywords,
+    };
+  }
+
+  private extractKeywords(content: string): Array<{ word: string; count: number }> {
+    // Extract important keywords (simplified version)
+    const importantWords = [
+      'プロジェクト',
+      '会議',
+      'ミーティング',
+      '開発',
+      '実装',
+      '設計',
+      '勉強',
+      '学習',
+      '読書',
+      '研究',
+      '分析',
+      '調査',
+      '運動',
+      'トレーニング',
+      '健康',
+      'ランニング',
+      'ウォーキング',
+      '完了',
+      '達成',
+      '成功',
+      '改善',
+      '解決',
+      '進捗',
+    ];
+
+    const wordCounts: Record<string, number> = {};
+
+    importantWords.forEach((word) => {
+      const count = (content.match(new RegExp(word, 'g')) ?? []).length;
+      if (count > 0) {
+        wordCounts[word] = count;
+      }
+    });
+
+    return Object.entries(wordCounts)
+      .map(([word, count]) => ({ word, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10); // Top 10 keywords
+  }
+
   private parseContent(content: string, filePath: string): ParsedMemo {
     const date = this.extractDate(content, filePath);
     const activities = this.extractDailyActivities(content);
     const positiveElements = this.extractPositiveElements(content);
+    const statistics = this.generateStatistics(activities, content);
 
     return {
       date,
       content,
       activities,
       positiveElements,
+      statistics,
     };
   }
 

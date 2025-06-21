@@ -10,8 +10,8 @@ export class GeminiVoiceGenerator {
   private ttsClient: GeminiAPITTSClient;
   private defaultVoiceConfig: VoiceConfig = {
     languageCode: 'ja-JP',
-    speakingRate: 1.0,
-    pitch: 0,
+    speakingRate: 0.95, // Slightly slower for news broadcast clarity
+    pitch: -1, // Slightly lower pitch for professional tone
     volumeGainDb: 0,
   };
 
