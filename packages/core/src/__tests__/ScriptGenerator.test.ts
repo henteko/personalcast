@@ -50,19 +50,33 @@ describe('ScriptGenerator', () => {
         positiveElements: ['完了させた'],
       };
 
-      const mockResponse = `[オープニング]
-あかり: こんにちは！Today's Youの時間です。私、あかりと
-けんた: けんたがお送りします！
+      const mockResponse = {
+        segments: [
+          {
+            type: 'opening',
+            dialogues: [
+              { speaker: 'あかり', text: 'こんにちは！Today\'s Youの時間です。私、あかりと' },
+              { speaker: 'けんた', text: 'けんたがお送りします！' }
+            ]
+          },
+          {
+            type: 'main',
+            dialogues: [
+              { speaker: 'あかり', text: '今日はプロジェクトを完了させたんですね。' },
+              { speaker: 'けんた', text: '重要な達成として記録されました。' }
+            ]
+          },
+          {
+            type: 'ending',
+            dialogues: [
+              { speaker: 'あかり', text: '明日の活動も注目していきます。' },
+              { speaker: 'けんた', text: 'それでは、また明日！' }
+            ]
+          }
+        ]
+      };
 
-[メイン]
-あかり: 今日はプロジェクトを完了させたんですね。
-けんた: 重要な達成として記録されました。
-
-[エンディング]
-あかり: 明日の活動も注目していきます。
-けんた: それでは、また明日！`;
-
-      mockGeminiClient.generateContentWithRetry.mockResolvedValue(mockResponse);
+      (mockGeminiClient as any).generateStructuredContent = jest.fn(() => Promise.resolve(mockResponse));
 
       const result = await generator.generateScript(memo);
 
@@ -82,11 +96,22 @@ describe('ScriptGenerator', () => {
         positiveElements: [],
       };
 
-      mockGeminiClient.generateContentWithRetry.mockResolvedValue('[オープニング]\nあかり: テスト');
+      const mockResponse = {
+        segments: [
+          {
+            type: 'opening',
+            dialogues: [
+              { speaker: 'あかり', text: 'テスト' }
+            ]
+          }
+        ]
+      };
+
+      (mockGeminiClient as any).generateStructuredContent = jest.fn(() => Promise.resolve(mockResponse));
 
       await generator.generateScript(memo, { style: AnalysisStyle.COMPREHENSIVE });
 
-      const callArgs = mockGeminiClient.generateContentWithRetry.mock.calls[0][0];
+      const callArgs = ((mockGeminiClient as any).generateStructuredContent as jest.Mock).mock.calls[0][0];
       expect(callArgs).toContain('包括的');
     });
   });
@@ -111,10 +136,11 @@ describe('ScriptGenerator', () => {
       expect(prompt).toContain('けんた');
       expect(prompt).toContain('分析的');
       expect(prompt).toContain('英語の勉強を3時間');
-      expect(prompt).toContain('[オープニング]');
-      expect(prompt).toContain('[メイン]');
-      expect(prompt).toContain('[エンディング]');
+      expect(prompt).toContain('オープニング');
+      expect(prompt).toContain('メイン');
+      expect(prompt).toContain('エンディング');
       expect(prompt).toContain('プロフェッショナルなニュース番組');
+      expect(prompt).toContain('JSON形式で台本を作成してください');
     });
 
     it('should include all activities in the prompt', () => {
@@ -134,53 +160,6 @@ describe('ScriptGenerator', () => {
       expect(prompt).toContain('仕事');
       expect(prompt).toContain('運動');
       expect(prompt).toContain('趣味');
-    });
-  });
-
-  describe('parseGeminiResponse', () => {
-    it('should parse valid Gemini response into NewsScript', () => {
-      const response = `[オープニング]
-あかり: こんにちは！
-けんた: 本日の活動レポートです。
-
-[メイン]
-あかり: プロジェクトの完成が確認されました。
-けんた: 重要な成果として記録されます。
-
-[エンディング]
-あかり: 明日の活動も注目です。
-けんた: また明日！`;
-
-      const script = generator.parseGeminiResponse(response);
-
-      expect(script.segments!).toHaveLength(3);
-      expect(script.segments![0].dialogues).toHaveLength(2);
-      expect(script.segments![0].dialogues[0].speaker).toBe(PersonalityType.AKARI);
-      expect(script.segments![0].dialogues[0].text).toBe('こんにちは！');
-      expect(script.segments![0].dialogues[1].speaker).toBe(PersonalityType.KENTA);
-    });
-
-    it('should handle responses with irregular formatting', () => {
-      const response = `[オープニング]
-あかり:こんにちは！
-けんた :  今日も頑張りましたね！
-
-[メイン]
-あかり：プロジェクトの完成、おめでとうございます！`;
-
-      const script = generator.parseGeminiResponse(response);
-
-      expect(script.segments![0].dialogues[0].text).toBe('こんにちは！');
-      expect(script.segments![0].dialogues[1].text).toBe('今日も頑張りましたね！');
-      expect(script.segments![1].dialogues[0].text).toBe(
-        'プロジェクトの完成、おめでとうございます！',
-      );
-    });
-
-    it('should throw error for invalid response format', () => {
-      const invalidResponse = 'This is not a valid script format';
-
-      expect(() => generator.parseGeminiResponse(invalidResponse)).toThrow('Invalid script format');
     });
   });
 });
