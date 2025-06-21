@@ -37,23 +37,28 @@ export class CheerCast {
   async generateFromFile(filePath: string, options: GenerationOptions): Promise<void> {
     try {
       // Parse memo
-      const memo = await this.memoParser.parseFile(filePath);
+      options.onProgress?.('メモファイルを解析中...');
+      const memo = await this.memoParser.parseTextFile(filePath);
 
       // Generate script
+      options.onProgress?.('ラジオ台本を生成中...');
       const script = await this.scriptGenerator.generateScript(memo, {
         style: options.style as PraiseStyle | undefined,
         duration: options.duration,
       });
 
       // Generate speech
+      options.onProgress?.('音声を生成中...');
       const audioBuffers = await this.voiceGenerator.generateSpeech(script, {
         speed: options.voiceSpeed,
       });
 
       // Combine audio
+      options.onProgress?.('音声を結合中...');
       let finalAudio = await this.audioMixer.combineAudio(audioBuffers);
 
       // Normalize volume
+      options.onProgress?.('音声を正規化してエクスポート中...');
       finalAudio = await this.audioMixer.normalizeVolume(finalAudio);
 
       // Export to file
@@ -61,6 +66,7 @@ export class CheerCast {
 
       // Add BGM if specified
       if (options.bgm) {
+        options.onProgress?.('BGMを追加中...');
         // Create temporary output file to avoid FFmpeg in-place editing error
         const tempOutput = options.outputPath.replace('.mp3', '_temp_bgm.mp3');
 
@@ -76,6 +82,7 @@ export class CheerCast {
 
         // Replace original file with BGM version
         await fs.rename(tempOutput, options.outputPath);
+        options.onProgress?.('BGMの追加が完了しました');
       }
     } catch (error) {
       throw error;
@@ -88,26 +95,31 @@ export class CheerCast {
   async generateFromDirectory(directoryPath: string, options: GenerationOptions): Promise<void> {
     try {
       // Parse all memos in directory
+      options.onProgress?.('メモファイルを解析中...');
       const memos = await this.memoParser.parseDirectory(directoryPath);
 
       // Combine memos for weekly summary
       const combinedMemo = this.combineMemos(memos);
 
       // Generate script
+      options.onProgress?.('ラジオ台本を生成中...');
       const script = await this.scriptGenerator.generateScript(combinedMemo, {
         style: options.style as PraiseStyle | undefined,
         duration: options.duration,
       });
 
       // Generate speech
+      options.onProgress?.('音声を生成中...');
       const audioBuffers = await this.voiceGenerator.generateSpeech(script, {
         speed: options.voiceSpeed,
       });
 
       // Combine audio
+      options.onProgress?.('音声を結合中...');
       let finalAudio = await this.audioMixer.combineAudio(audioBuffers);
 
       // Normalize volume
+      options.onProgress?.('音声を正規化してエクスポート中...');
       finalAudio = await this.audioMixer.normalizeVolume(finalAudio);
 
       // Export to file
@@ -115,6 +127,7 @@ export class CheerCast {
 
       // Add BGM if specified
       if (options.bgm) {
+        options.onProgress?.('BGMを追加中...');
         // Create temporary output file to avoid FFmpeg in-place editing error
         const tempOutput = options.outputPath.replace('.mp3', '_temp_bgm.mp3');
 
@@ -130,6 +143,7 @@ export class CheerCast {
 
         // Replace original file with BGM version
         await fs.rename(tempOutput, options.outputPath);
+        options.onProgress?.('BGMの追加が完了しました');
       }
     } catch (error) {
       throw error;
@@ -140,8 +154,29 @@ export class CheerCast {
    * Preview script without generating audio
    */
   async previewScript(filePath: string, options: Partial<GenerationOptions>): Promise<RadioScript> {
-    const memo = await this.memoParser.parseFile(filePath);
+    options.onProgress?.('メモファイルを解析中...');
+    const memo = await this.memoParser.parseTextFile(filePath);
+
+    options.onProgress?.('ラジオ台本を生成中...');
     return this.scriptGenerator.generateScript(memo, {
+      style: options.style as PraiseStyle | undefined,
+      duration: options.duration,
+    });
+  }
+
+  /**
+   * Preview weekly script without generating audio
+   */
+  async previewWeeklyScript(
+    directoryPath: string,
+    options: Partial<GenerationOptions>,
+  ): Promise<RadioScript> {
+    options.onProgress?.('メモファイルを解析中...');
+    const memos = await this.memoParser.parseDirectory(directoryPath);
+    const combinedMemo = this.combineMemos(memos);
+
+    options.onProgress?.('ラジオ台本を生成中...');
+    return this.scriptGenerator.generateScript(combinedMemo, {
       style: options.style as PraiseStyle | undefined,
       duration: options.duration,
     });

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { generateCommand } from './commands/generate';
+import { executeGenerateCommand } from './commands/generate';
 import { previewCommand } from './commands/preview';
 import { initCommand } from './commands/init';
 import { createAddBgmCommand } from './commands/add-bgm';
@@ -35,7 +35,7 @@ program
   .option('--fade-out <seconds>', 'BGMフェードアウト時間', parseFloat)
   .option('--intro <seconds>', 'BGMのみの導入時間', parseFloat)
   .option('--outro <seconds>', 'BGMのみの終了時間', parseFloat)
-  .action(generateCommand);
+  .action(executeGenerateCommand);
 
 // Preview command
 program

@@ -108,4 +108,5 @@ export interface GenerationOptions {
     intro?: number;
     outro?: number;
   };
+  onProgress?: (message: string) => void;
 }

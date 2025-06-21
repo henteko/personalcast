@@ -1,6 +1,5 @@
-import { MemoParser } from '../../core/parser';
-import { ScriptGenerator } from '../../core/generator';
-import { PraiseStyle, PersonalityType } from '../../types';
+import { CheerCast } from '../../CheerCast';
+import { PersonalityType } from '../../types';
 import { config } from '../../config';
 import {
   validateInputPath,
@@ -39,15 +38,20 @@ export async function previewCommand(options: PreviewOptions): Promise<void> {
   try {
     console.log('📝 台本プレビューを生成中...\n');
 
-    // Parse memo
-    const parser = new MemoParser();
-    const memo = await parser.parseTextFile(options.input);
+    // Create CheerCast instance
+    const cheerCast = new CheerCast();
 
-    // Generate script
-    const generator = new ScriptGenerator();
-    const script = await generator.generateScript(memo, {
-      style: options.style as PraiseStyle,
-    });
+    // Generate script using CheerCast
+    const script =
+      options.type === 'weekly'
+        ? await cheerCast.previewWeeklyScript(options.input, {
+            style: options.style as 'gentle' | 'energetic',
+            onProgress: (message: string) => console.log(`  ${message}`),
+          })
+        : await cheerCast.previewScript(options.input, {
+            style: options.style as 'gentle' | 'energetic',
+            onProgress: (message: string) => console.log(`  ${message}`),
+          });
 
     // Display script
     console.log('='.repeat(60));
