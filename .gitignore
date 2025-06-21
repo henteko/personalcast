@@ -1,8 +1,12 @@
 # Dependencies
 node_modules/
+packages/*/node_modules/
 
 # Production build
 dist/
+packages/*/dist/
+.next/
+packages/web/.next/
 
 # Environment variables
 .env

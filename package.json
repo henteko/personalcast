@@ -1,28 +1,27 @@
 {
-  "name": "personalcast",
+  "name": "personalcast-monorepo",
   "version": "0.1.0",
-  "description": "毎日のメモから2人のキャスターがあなたの活動を分析・紹介するパーソナルニュース番組を自動生成するCLIツール",
-  "main": "dist/index.js",
-  "bin": {
-    "personalcast": "dist/src/cli/index.js"
-  },
-  "directories": {
-    "doc": "docs"
-  },
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "build": "tsc",
-    "postbuild": "node scripts/postbuild.js",
-    "dev": "ts-node src/cli/index.ts",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "lint": "eslint src --ext .ts",
-    "format": "prettier --write \"src/**/*.ts\"",
-    "typecheck": "tsc --noEmit",
-    "prepare": "npm run build"
+    "build": "npm run build:core && npm run build:cli",
+    "build:core": "npm run build -w packages/core",
+    "build:cli": "npm run build -w packages/cli",
+    "dev:cli": "npm run dev -w packages/cli",
+    "test": "npm run test --workspaces",
+    "test:coverage": "npm run test:coverage --workspaces",
+    "test:core": "npm run test -w packages/core",
+    "test:cli": "npm run test -w packages/cli",
+    "lint": "npm run lint --workspaces",
+    "typecheck": "npm run typecheck --workspaces",
+    "clean": "rm -rf packages/*/dist packages/*/node_modules node_modules",
+    "install:all": "npm install"
   },
   "keywords": [
     "cli",
+    "web",
     "news",
     "ai",
     "tts",
@@ -56,13 +55,5 @@
     "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
-  },
-  "dependencies": {
-    "@google/genai": "^1.5.1",
-    "@google/generative-ai": "^0.24.1",
-    "@types/fluent-ffmpeg": "^2.1.27",
-    "commander": "^14.0.0",
-    "dotenv": "^16.5.0",
-    "fluent-ffmpeg": "^2.1.3"
   }
 }

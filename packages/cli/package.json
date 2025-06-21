@@ -1,0 +1,56 @@
+{
+  "name": "personalcast",
+  "version": "0.1.0",
+  "description": "毎日のメモから2人のキャスターがあなたの活動を分析・紹介するパーソナルニュース番組を自動生成するCLIツール",
+  "main": "dist/index.js",
+  "bin": {
+    "personalcast": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node src/index.ts",
+    "test": "jest --passWithNoTests",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "cli",
+    "news",
+    "ai",
+    "tts",
+    "analysis",
+    "personal"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/henteko/cheercast.git"
+  },
+  "bugs": {
+    "url": "https://github.com/henteko/cheercast/issues"
+  },
+  "homepage": "https://github.com/henteko/cheercast#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@personalcast/core": "file:../core",
+    "commander": "^14.0.0",
+    "dotenv": "^16.5.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.29.0",
+    "@jest/globals": "^29.7.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.0.3",
+    "@typescript-eslint/eslint-plugin": "^8.34.1",
+    "@typescript-eslint/parser": "^8.34.1",
+    "eslint": "^9.29.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.4.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}

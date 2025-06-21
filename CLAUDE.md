@@ -1,55 +1,61 @@
-# CheerCast プロジェクト概要とアーキテクチャ
+# PersonalCast プロジェクト概要とアーキテクチャ
 
-このドキュメントは、CheerCastプロジェクトの現在の設計、アーキテクチャ、および開発ガイドラインを記載しています。
+このドキュメントは、PersonalCastプロジェクトの現在の設計、アーキテクチャ、および開発ガイドラインを記載しています。
 
 ## 🎯 プロジェクト概要
 
-CheerCastは、日々のメモから2人のAIパーソナリティがユーザーの頑張りを褒めるラジオ番組を自動生成するCLIツールです。
+PersonalCastは、日々のメモから2人のAIパーソナリティがユーザーの活動を分析・紹介するニュース番組を自動生成するCLIツールです。
 
 ### 主な特徴
 - 📝 様々な形式のメモファイルに対応（.txt, .md, .json, .csv）
-- 🤖 Google Gemini API (gemini-2.5-flash)による自然な対話台本生成
+- 🤖 Google Gemini API (@google/genai)による自然な対話台本生成
 - 🎙️ Gemini 2.5 Flash Preview TTSによる高品質な音声合成
 - 🎵 BGM追加機能（自動ダッキング、フェード処理対応）
 - ⚡ シンプルなCLIインターフェース
+- 🏗️ モノレポ構造による保守性の高い設計
 - 🔄 自動リトライ機能付きのAPI呼び出し
 - ✅ 入力検証とエラーハンドリング
 
 ## 🏗️ アーキテクチャ
 
-### ディレクトリ構造
+### ディレクトリ構造（モノレポ）
 ```
-cheercast/
-├── src/
-│   ├── cli/                  # CLIコマンドとエントリーポイント
-│   │   ├── index.ts         # メインCLIエントリーポイント
-│   │   └── commands/        # 各種コマンド実装
-│   │       ├── generate.ts  # メイン生成コマンド
-│   │       ├── preview.ts   # プレビューコマンド
-│   │       ├── init.ts      # 初期設定コマンド
-│   │       └── add-bgm.ts   # BGM追加コマンド
-│   ├── core/                # コアビジネスロジック
-│   │   ├── parser/          # メモファイルパーサー
-│   │   ├── generator/       # 台本生成
-│   │   ├── voice/           # 音声合成
-│   │   └── mixer/           # 音声ミキシング
-│   ├── services/            # 外部サービス統合
-│   │   ├── gemini-api/      # Google Gemini API
-│   │   └── ffmpeg/          # FFmpeg処理
-│   ├── utils/               # ユーティリティ関数
-│   │   ├── validation.ts    # 入力検証
-│   │   └── progress.ts      # 進捗表示
-│   ├── config/              # 設定管理
-│   ├── types/               # TypeScript型定義
-│   └── CheerCast.ts         # メインオーケストレーター
-├── tests/                   # テストファイル
+personalcast/
+├── packages/
+│   ├── core/                # コアライブラリ (@personalcast/core)
+│   │   ├── src/
+│   │   │   ├── parser/      # メモファイルパーサー
+│   │   │   ├── generator/   # 台本生成
+│   │   │   ├── voice/       # 音声合成
+│   │   │   ├── mixer/       # 音声ミキシング
+│   │   │   ├── services/    # 外部サービス統合
+│   │   │   │   ├── gemini-api/  # Google Gemini API (@google/genai)
+│   │   │   │   └── ffmpeg/      # FFmpeg処理
+│   │   │   ├── utils/       # ユーティリティ関数
+│   │   │   ├── config/      # 設定管理
+│   │   │   ├── types/       # TypeScript型定義
+│   │   │   └── PersonalCast.ts # メインオーケストレーター
+│   │   ├── dist/            # ビルド済みファイル
+│   │   └── package.json
+│   └── cli/                 # CLIアプリケーション (personalcast)
+│       ├── src/
+│       │   ├── commands/    # CLIコマンド実装
+│       │   │   ├── generate.ts  # メイン生成コマンド
+│       │   │   ├── preview.ts   # プレビューコマンド
+│       │   │   ├── init.ts      # 初期設定コマンド
+│       │   │   └── add-bgm.ts   # BGM追加コマンド
+│       │   ├── PersonalCast.ts  # CLI固有のPersonalCast
+│       │   └── index.ts     # メインCLIエントリーポイント
+│       ├── dist/            # ビルド済みファイル
+│       └── package.json
 ├── docs/                    # ドキュメント
-└── package.json
+├── .github/                 # GitHub Actions ワークフロー
+└── package.json             # ワークスペース設定
 ```
 
 ### 主要コンポーネント
 
-#### 1. **CheerCast** (メインオーケストレーター)
+#### 1. **PersonalCast** (メインオーケストレーター)
 - 全体の処理フローを制御
 - 各コンポーネントの連携を管理
 
@@ -60,7 +66,7 @@ cheercast/
 
 #### 3. **ScriptGenerator**
 - Gemini APIを使用した台本生成
-- カスタマイズ可能なラジオ番組名（デフォルト: CheerCast）
+- カスタマイズ可能なラジオ番組名（デフォルト: PersonalCast）
 - パーソナリティ設定に基づく対話生成
 
 #### 4. **GeminiVoiceGenerator**
@@ -81,10 +87,10 @@ cheercast/
 
 ## 🔧 設定システム
 
-### 設定ファイル (cheercast.config.json)
+### 設定ファイル (personalcast.config.json)
 ```json
 {
-  "radioShowName": "CheerCast",
+  "radioShowName": "PersonalCast",
   "personalities": {
     "host1": {
       "name": "あかり",
@@ -119,8 +125,34 @@ GEMINI_API_KEY=your-gemini-api-key
 
 # オプション
 DEFAULT_DURATION=10
-DEFAULT_STYLE=gentle
+DEFAULT_STYLE=analytical
 GEMINI_MODEL=gemini-2.5-flash  # モデルのオーバーライド
+```
+
+## 🛠️ 開発環境
+
+### 開発コマンド
+```bash
+# 全パッケージのビルド
+npm run build
+
+# コアライブラリのみビルド
+npm run build:core
+
+# CLIパッケージのみビルド
+npm run build:cli
+
+# CLIの開発モード
+npm run dev:cli
+
+# 全パッケージのテスト
+npm run test
+
+# 全パッケージのリント
+npm run lint
+
+# 全パッケージの型チェック
+npm run typecheck
 ```
 
 ## 🚀 処理フロー
@@ -190,10 +222,31 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 3. テストを追加/更新
 4. プルリクエストを作成
 
+## 🏗️ モノレポ構造の利点
+
+PersonalCastはモノレポ構造を採用しており、以下の利点があります：
+
+### 構造上の利点
+- **コード共有**: コアロジックを複数のアプリケーションで再利用
+- **一貫性**: 共通の型定義、設定、ツールチェーン
+- **保守性**: 依存関係の管理が簡単
+- **開発効率**: 統一されたビルド・テスト・リントプロセス
+
+### パッケージ構成
+- **@personalcast/core**: 共有ライブラリ（Node.js環境）
+- **personalcast**: CLIアプリケーション（coreライブラリを使用）
+
+### 将来の拡張
+- **Webアプリケーション**: バックエンドでcoreライブラリを使用するAPI
+- **デスクトップアプリ**: ElectronでCLIをGUIラップ
+- **モバイルアプリ**: React Native + API経由でcoreライブラリ使用
+
 ## 📊 今後の拡張可能性
 
-- Web UI版の開発
+- Web版の開発（Next.js + API Routes）
 - 追加の音声合成エンジン対応
 - カスタムパーソナリティの追加
 - 多言語対応
 - バッチ処理機能
+- リアルタイム音声ストリーミング
+- デスクトップ・モバイル版の開発
