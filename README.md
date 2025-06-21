@@ -11,6 +11,7 @@ CheerCastは、日記やライフログから、AIが2人のパーソナリテ�
 - 📝 様々な形式のメモファイルに対応（.txt, .md, .json, .csv）
 - 🤖 Google Gemini APIによる自然な対話台本生成
 - 🎙️ Gemini 2.5 Flash Preview TTSによる高品質な音声合成
+- 🎵 BGM追加機能（自動ダッキング、フェード処理対応）
 - ⚡ シンプルなCLIインターフェース
 - 🔄 自動リトライ機能付きのAPI呼び出し
 - ✅ 入力検証とエラーハンドリング
@@ -149,7 +150,40 @@ cheercast preview [options]
 
 | オプション | 説明 | デフォルト |
 |----------|------|----------|
-| `-i, --input <path>` | 入力ファイル（必須） | - |
+| `-i, --input <path>` | 入力ファイルまたはディレクトリ（必須） | - |
+| `-t, --type <type>` | 番組タイプ (`daily` または `weekly`) | `daily` |
+| `-s, --style <style>` | 褒めスタイル (`gentle` または `energetic`) | `gentle` |
+
+#### add-bgm コマンド
+```bash
+cheercast add-bgm [options]
+```
+
+生成された音声ファイルにBGMを追加します。BGMは自動的にループし、音声に合わせて音量が調整されます。
+
+| オプション | 説明 | デフォルト |
+|----------|------|----------|
+| `-b, --bgm <path>` | BGMファイルのパス（必須） | - |
+| `-a, --audio <path>` | 音声ファイルのパス（必須） | - |
+| `-o, --output <path>` | 出力ファイルパス | `{audio}_with_bgm.mp3` |
+| `--bgm-volume <number>` | BGMの基本音量 (0-1) | `0.3` |
+| `--ducking <number>` | 音声時のBGM音量低下率 (0-1) | `0.15` |
+| `--fade-in <seconds>` | BGMフェードイン時間 | `3` |
+| `--fade-out <seconds>` | BGMフェードアウト時間 | `3` |
+| `--intro <seconds>` | BGMのみの導入時間 | `3` |
+| `--outro <seconds>` | BGMのみの終了時間 | `2` |
+
+**使用例:**
+```bash
+# 基本的な使用方法
+cheercast add-bgm --bgm music.mp3 --audio radio_2025-01-20.mp3
+
+# BGM音量を控えめに設定
+cheercast add-bgm --bgm music.mp3 --audio radio.mp3 --bgm-volume 0.2 --ducking 0.1
+
+# カスタムフェード設定
+cheercast add-bgm --bgm music.mp3 --audio radio.mp3 --fade-in 5 --fade-out 5
+```
 | `-t, --type <type>` | 番組タイプ | `daily` |
 | `-s, --style <style>` | 褒めスタイル | `gentle` |
 

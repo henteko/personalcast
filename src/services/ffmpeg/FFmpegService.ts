@@ -18,6 +18,16 @@ export interface NormalizeOptions {
   peakNormalization?: boolean;
 }
 
+export interface BgmMixOptions {
+  output?: string;
+  bgmVolume?: number;
+  ducking?: number;
+  fadeIn?: number;
+  fadeOut?: number;
+  intro?: number;
+  outro?: number;
+}
+
 export class FFmpegService {
   private tempDir: string;
 
@@ -218,6 +228,79 @@ export class FFmpegService {
         }
       });
     });
+  }
+
+  async addBackgroundMusic(
+    audioPath: string,
+    bgmPath: string,
+    options: BgmMixOptions,
+  ): Promise<string> {
+    const {
+      output = audioPath.replace('.mp3', '_with_bgm.mp3'),
+      bgmVolume = 0.3,
+      ducking = 0.15,
+      fadeIn = 3,
+      fadeOut = 3,
+      intro = 3,
+      outro = 2,
+    } = options;
+
+    try {
+      // Get audio duration
+      const audioDuration = await this.getDuration(audioPath);
+      const totalDuration = audioDuration + intro + outro;
+
+      // Create complex filter for BGM mixing
+      const filterComplex = [
+        // BGM processing: loop and split into three copies
+        `[1:a]aloop=loop=-1:size=2e+09[bgm_loop]`,
+        `[bgm_loop]asplit=3[bgm1][bgm2][bgm3]`,
+
+        // Process each BGM section separately
+        `[bgm1]atrim=0:${intro},volume=${bgmVolume},afade=t=in:st=0:d=${fadeIn}[bgm_intro]`,
+        `[bgm2]atrim=${intro}:${audioDuration + intro},volume=${ducking}[bgm_main]`,
+        `[bgm3]atrim=${audioDuration + intro}:${totalDuration},volume=${bgmVolume},afade=t=out:st=${Math.max(0, outro - fadeOut)}:d=${Math.min(fadeOut, outro)}[bgm_outro]`,
+
+        // Delay voice to start after intro
+        `[0:a]adelay=${intro * 1000}[voice_delayed]`,
+
+        // Concatenate BGM sections
+        `[bgm_intro][bgm_main][bgm_outro]concat=n=3:v=0:a=1[bgm_final]`,
+
+        // Mix voice with BGM
+        `[voice_delayed][bgm_final]amix=inputs=2:duration=longest:dropout_transition=2[mixed]`,
+
+        // Final normalization
+        `[mixed]loudnorm=I=-16:TP=-1.5:LRA=11[final]`,
+      ].join(';');
+
+      await new Promise<void>((resolve, reject) => {
+        ffmpeg()
+          .input(audioPath)
+          .input(bgmPath)
+          .complexFilter(filterComplex)
+          .outputOptions(['-map', '[final]', '-acodec', 'libmp3lame', '-b:a', '192k'])
+          .output(output)
+          .on('start', (commandLine) => {
+            console.log('FFmpeg command:', commandLine);
+          })
+          .on('progress', (progress) => {
+            if (progress.percent) {
+              process.stdout.write(`\r進捗: ${Math.round(progress.percent)}%`);
+            }
+          })
+          .on('end', () => {
+            console.log('\n'); // New line after progress
+            resolve();
+          })
+          .on('error', (err: Error) => reject(err))
+          .run();
+      });
+
+      return output;
+    } catch (error) {
+      throw new Error(`Failed to add background music: ${String(error)}`);
+    }
   }
 
   private async cleanupTempFiles(files: string[]): Promise<void> {

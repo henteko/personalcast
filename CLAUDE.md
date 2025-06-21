@@ -10,6 +10,7 @@ CheerCastは、日々のメモから2人のAIパーソナリティがユーザ�
 - 📝 様々な形式のメモファイルに対応（.txt, .md, .json, .csv）
 - 🤖 Google Gemini API (gemini-2.5-flash)による自然な対話台本生成
 - 🎙️ Gemini 2.5 Flash Preview TTSによる高品質な音声合成
+- 🎵 BGM追加機能（自動ダッキング、フェード処理対応）
 - ⚡ シンプルなCLIインターフェース
 - 🔄 自動リトライ機能付きのAPI呼び出し
 - ✅ 入力検証とエラーハンドリング
@@ -25,7 +26,8 @@ cheercast/
 │   │   └── commands/        # 各種コマンド実装
 │   │       ├── generate.ts  # メイン生成コマンド
 │   │       ├── preview.ts   # プレビューコマンド
-│   │       └── init.ts      # 初期設定コマンド
+│   │       ├── init.ts      # 初期設定コマンド
+│   │       └── add-bgm.ts   # BGM追加コマンド
 │   ├── core/                # コアビジネスロジック
 │   │   ├── parser/          # メモファイルパーサー
 │   │   ├── generator/       # 台本生成
@@ -70,6 +72,12 @@ cheercast/
 - FFmpegを使用した音声処理
 - 複数音声の結合
 - 音量正規化
+
+#### 6. **AddBgmCommand**
+- 生成された音声にBGMを追加
+- 自動ダッキング（音声検出時にBGM音量を下げる）
+- フェードイン/アウト処理
+- BGMの自動ループ
 
 ## 🔧 設定システム
 

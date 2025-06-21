@@ -4,6 +4,7 @@ import { Command } from 'commander';
 import { generateCommand } from './commands/generate';
 import { previewCommand } from './commands/preview';
 import { initCommand } from './commands/init';
+import { createAddBgmCommand } from './commands/add-bgm';
 
 const program = new Command();
 
@@ -40,6 +41,9 @@ program
 
 // Init command
 program.command('init').description('CheerCastの初期設定を行う').action(initCommand);
+
+// Add BGM command
+program.addCommand(createAddBgmCommand());
 
 // Parse command line arguments
 program.parse(process.argv);
