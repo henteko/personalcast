@@ -19,7 +19,9 @@
       "Bash(cp:*)",
       "Bash(touch:*)",
       "Bash(find:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(npx create-next-app:*)",
+      "Bash(npm ls:*)"
     ],
     "deny": []
   }

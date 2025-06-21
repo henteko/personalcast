@@ -6,10 +6,12 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build:core && npm run build:cli",
+    "build": "npm run build:core && npm run build:cli && npm run build:web",
     "build:core": "npm run build -w packages/core",
     "build:cli": "npm run build -w packages/cli",
+    "build:web": "npm run build -w packages/web",
     "dev:cli": "npm run dev -w packages/cli",
+    "dev:web": "npm run dev -w packages/web",
     "test": "npm run test --workspaces",
     "test:coverage": "npm run test:coverage --workspaces",
     "test:core": "npm run test -w packages/core",

@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+:root {
+  /* メインカラー（プロフェッショナル） */
+  --primary-blue: #1a365d;
+  --primary-light-blue: #2b6cb0;
+  --accent-blue: #90cdf4;
+  
+  /* キャスターカラー */
+  --akari-color: #4299e1;
+  --kenta-color: #2d3748;
+  
+  /* UI カラー */
+  --bg-main: #f7fafc;
+  --bg-white: #ffffff;
+  --text-primary: #1a202c;
+  --text-secondary: #4a5568;
+  
+  /* 台本表示 */
+  --script-speaker: #3182ce;
+  --script-text: #2d3748;
+  
+  /* ステータスカラー */
+  --success: #48bb78;
+  --warning: #ed8936;
+  --error: #f56565;
+  
+  --background: var(--bg-white);
+  --foreground: var(--text-primary);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary-blue: var(--primary-blue);
+  --color-primary-light-blue: var(--primary-light-blue);
+  --color-accent-blue: var(--accent-blue);
+  --color-bg-main: var(--bg-main);
+  --color-text-secondary: var(--text-secondary);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--bg-main);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+}
+
+/* Custom slider styles */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-track {
+  height: 0.5rem;
+  border-radius: 0.5rem;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background: var(--primary-blue);
+  cursor: pointer;
+  margin-top: -0.375rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+input[type="range"]::-moz-range-track {
+  height: 0.5rem;
+  border-radius: 0.5rem;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background: var(--primary-blue);
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
