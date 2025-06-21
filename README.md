@@ -124,6 +124,12 @@ cheercast preview -i memo.txt
 # エネルギッシュなスタイルで生成
 cheercast generate -i memo.txt -s energetic
 
+# BGM付きで生成
+cheercast generate -i memo.txt -b bgm.mp3
+
+# BGM付きでカスタム設定
+cheercast generate -i memo.txt -b bgm.mp3 --bgm-volume 0.2 --intro 5
+
 # ヘルプ
 cheercast --help
 ```
@@ -142,6 +148,13 @@ cheercast generate [options]
 | `-t, --type <type>` | 番組タイプ (`daily` または `weekly`) | `daily` |
 | `-s, --style <style>` | 褒めスタイル (`gentle` または `energetic`) | `gentle` |
 | `-d, --duration <minutes>` | 番組の長さ（1-60分） | `10` |
+| `-b, --bgm <path>` | BGMファイルのパス（MP3形式） | - |
+| `--bgm-volume <number>` | BGMの基本音量 (0-1) | `0.3` |
+| `--ducking <number>` | 音声時のBGM音量低下率 (0-1) | `0.15` |
+| `--fade-in <seconds>` | BGMフェードイン時間 | `3` |
+| `--fade-out <seconds>` | BGMフェードアウト時間 | `3` |
+| `--intro <seconds>` | BGMのみの導入時間 | `3` |
+| `--outro <seconds>` | BGMのみの終了時間 | `2` |
 
 #### preview コマンド
 ```bash

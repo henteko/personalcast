@@ -2,13 +2,16 @@ import { MemoParser } from './core/parser/MemoParser';
 import { ScriptGenerator } from './core/generator/ScriptGenerator';
 import { GeminiVoiceGenerator } from './core/voice/GeminiVoiceGenerator';
 import { AudioMixer } from './core/mixer/AudioMixer';
+import { FFmpegService } from './services/ffmpeg/FFmpegService';
 import { ParsedMemo, RadioScript, GenerationOptions, PraiseStyle } from './types';
+import * as fs from 'fs/promises';
 
 export class CheerCast {
   private memoParser: MemoParser;
   private scriptGenerator: ScriptGenerator;
   private voiceGenerator: GeminiVoiceGenerator;
   private audioMixer: AudioMixer;
+  private ffmpegService: FFmpegService;
 
   constructor() {
     this.memoParser = new MemoParser();
@@ -25,6 +28,7 @@ export class CheerCast {
     });
 
     this.audioMixer = new AudioMixer();
+    this.ffmpegService = new FFmpegService();
   }
 
   /**
@@ -54,6 +58,25 @@ export class CheerCast {
 
       // Export to file
       await this.audioMixer.exportToMP3(finalAudio, options.outputPath);
+
+      // Add BGM if specified
+      if (options.bgm) {
+        // Create temporary output file to avoid FFmpeg in-place editing error
+        const tempOutput = options.outputPath.replace('.mp3', '_temp_bgm.mp3');
+
+        await this.ffmpegService.addBackgroundMusic(options.outputPath, options.bgm.path, {
+          output: tempOutput,
+          bgmVolume: options.bgm.volume,
+          ducking: options.bgm.ducking,
+          fadeIn: options.bgm.fadeIn,
+          fadeOut: options.bgm.fadeOut,
+          intro: options.bgm.intro,
+          outro: options.bgm.outro,
+        });
+
+        // Replace original file with BGM version
+        await fs.rename(tempOutput, options.outputPath);
+      }
     } catch (error) {
       throw error;
     }
@@ -89,6 +112,25 @@ export class CheerCast {
 
       // Export to file
       await this.audioMixer.exportToMP3(finalAudio, options.outputPath);
+
+      // Add BGM if specified
+      if (options.bgm) {
+        // Create temporary output file to avoid FFmpeg in-place editing error
+        const tempOutput = options.outputPath.replace('.mp3', '_temp_bgm.mp3');
+
+        await this.ffmpegService.addBackgroundMusic(options.outputPath, options.bgm.path, {
+          output: tempOutput,
+          bgmVolume: options.bgm.volume,
+          ducking: options.bgm.ducking,
+          fadeIn: options.bgm.fadeIn,
+          fadeOut: options.bgm.fadeOut,
+          intro: options.bgm.intro,
+          outro: options.bgm.outro,
+        });
+
+        // Replace original file with BGM version
+        await fs.rename(tempOutput, options.outputPath);
+      }
     } catch (error) {
       throw error;
     }

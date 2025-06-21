@@ -2,8 +2,10 @@ import { MemoParser } from '../../core/parser';
 import { ScriptGenerator } from '../../core/generator';
 import { GeminiVoiceGenerator } from '../../core/voice/GeminiVoiceGenerator';
 import { AudioMixer } from '../../core/mixer';
+import { FFmpegService } from '../../services/ffmpeg/FFmpegService';
 import { ProgressReporter } from '../../utils';
 import { PraiseStyle } from '../../types';
+import * as fs from 'fs/promises';
 import {
   validateInputPath,
   validateProgramType,
@@ -11,6 +13,7 @@ import {
   validateDuration,
   validateOutputPath,
   validateEnvironmentVariables,
+  validateBgmPath,
 } from '../../utils/validation';
 
 interface GenerateOptions {
@@ -19,6 +22,13 @@ interface GenerateOptions {
   type: string;
   style: string;
   duration: string;
+  bgm?: string;
+  bgmVolume?: number;
+  ducking?: number;
+  fadeIn?: number;
+  fadeOut?: number;
+  intro?: number;
+  outro?: number;
 }
 
 export async function generateCommand(options: GenerateOptions): Promise<void> {
@@ -36,6 +46,7 @@ export async function generateCommand(options: GenerateOptions): Promise<void> {
     validatePraiseStyle(options.style),
     validateDuration(options.duration),
     await validateOutputPath(options.output),
+    await validateBgmPath(options.bgm),
   ];
 
   const invalidValidation = validations.find((v) => !v.valid);
@@ -44,7 +55,7 @@ export async function generateCommand(options: GenerateOptions): Promise<void> {
     process.exit(1);
   }
 
-  const progress = new ProgressReporter(5);
+  const progress = new ProgressReporter(options.bgm ? 6 : 5);
 
   try {
     progress.start('CheerCast ラジオ番組生成を開始します...');
@@ -85,6 +96,30 @@ export async function generateCommand(options: GenerateOptions): Promise<void> {
     progress.update('音声を正規化してエクスポート中...');
     const normalizedAudio = await mixer.normalizeVolume(combinedAudio);
     await mixer.exportToMP3(normalizedAudio, options.output);
+
+    // Step 6: Add BGM if specified
+    if (options.bgm) {
+      progress.update('BGMを追加中...');
+      const ffmpegService = new FFmpegService();
+
+      // Create temporary output file to avoid FFmpeg in-place editing error
+      const tempOutput = options.output.replace('.mp3', '_temp_bgm.mp3');
+
+      await ffmpegService.addBackgroundMusic(options.output, options.bgm, {
+        output: tempOutput,
+        bgmVolume: options.bgmVolume,
+        ducking: options.ducking,
+        fadeIn: options.fadeIn,
+        fadeOut: options.fadeOut,
+        intro: options.intro,
+        outro: options.outro,
+      });
+
+      // Replace original file with BGM version
+      await fs.rename(tempOutput, options.output);
+
+      progress.info('BGMの追加が完了しました');
+    }
 
     progress.complete(`ラジオ番組の生成が完了しました: ${options.output}`);
   } catch (error) {

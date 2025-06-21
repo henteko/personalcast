@@ -28,6 +28,13 @@ program
   .option('-t, --type <type>', '番組タイプ (daily|weekly)', 'daily')
   .option('-s, --style <style>', '褒めスタイル (gentle|energetic)', 'gentle')
   .option('-d, --duration <minutes>', '番組の長さ（分）', '10')
+  .option('-b, --bgm <path>', 'BGMファイルのパス')
+  .option('--bgm-volume <number>', 'BGMの基本音量 (0-1)', parseFloat)
+  .option('--ducking <number>', '音声時のBGM音量低下率 (0-1)', parseFloat)
+  .option('--fade-in <seconds>', 'BGMフェードイン時間', parseFloat)
+  .option('--fade-out <seconds>', 'BGMフェードアウト時間', parseFloat)
+  .option('--intro <seconds>', 'BGMのみの導入時間', parseFloat)
+  .option('--outro <seconds>', 'BGMのみの終了時間', parseFloat)
   .action(generateCommand);
 
 // Preview command

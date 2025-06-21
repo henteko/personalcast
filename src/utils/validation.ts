@@ -104,6 +104,38 @@ export async function validateOutputPath(outputPath: string): Promise<Validation
   }
 }
 
+export async function validateBgmPath(bgmPath: string | undefined): Promise<ValidationResult> {
+  if (!bgmPath) {
+    return { valid: true }; // BGM is optional
+  }
+
+  try {
+    const stats = await fs.stat(bgmPath);
+
+    if (!stats.isFile()) {
+      return {
+        valid: false,
+        error: 'BGMファイルが見つかりません',
+      };
+    }
+
+    const ext = path.extname(bgmPath).toLowerCase();
+    if (ext !== '.mp3') {
+      return {
+        valid: false,
+        error: 'BGMファイルはMP3形式である必要があります',
+      };
+    }
+
+    return { valid: true };
+  } catch {
+    return {
+      valid: false,
+      error: `BGMファイルが見つかりません: ${bgmPath}`,
+    };
+  }
+}
+
 export function validateEnvironmentVariables(): ValidationResult {
   const required = ['GEMINI_API_KEY'];
 

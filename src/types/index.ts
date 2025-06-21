@@ -99,4 +99,13 @@ export interface GenerationOptions {
   style?: 'gentle' | 'energetic';
   duration?: number;
   voiceSpeed?: number;
+  bgm?: {
+    path: string;
+    volume?: number;
+    ducking?: number;
+    fadeIn?: number;
+    fadeOut?: number;
+    intro?: number;
+    outro?: number;
+  };
 }
