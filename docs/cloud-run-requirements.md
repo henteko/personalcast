@@ -97,9 +97,9 @@ interface GenerationOptions {
 enum GenerationStatus {
   QUEUED = 'queued',
   PARSING = 'parsing',
-  ANALYZING_DATA = 'analyzing_data',
+  ANALYZING_MEMO = 'analyzing_memo',
   GENERATING_SCRIPT = 'generating_script',
-  SCRIPT_READY = 'script_ready',  // レポート閲覧可能
+  SCRIPT_READY = 'script_ready',  // 台本閲覧可能
   SYNTHESIZING_VOICE = 'synthesizing_voice',
   MIXING_AUDIO = 'mixing_audio',
   COMPLETED = 'completed',
@@ -109,56 +109,41 @@ enum GenerationStatus {
 
 ### 5. 結果表示・ダウンロード
 
-#### 統計レポート表示（音声生成前）
-- **即座に表示**: データ分析完了後すぐに閲覧可能
-- **統計ダッシュボード**: グラフやチャートで可視化
-- **カテゴリー別分析**: 活動の分布表示
-- **共有機能**: レポートのみの共有URL
+#### 台本表示（音声生成前）
+- **即座に表示**: 台本生成完了後すぐに閲覧可能
+- **テキスト表示**: 生成された台本をそのまま表示
 
 #### 音声再生画面
-- **同期再生**: 音声とレポートが同期してスクロール
-- **ハイライト表示**: 現在再生中のセクションをハイライト
-- **インタラクティブ**: レポートクリックで該当箇所から再生
-- **タイムスタンプ**: 各セクションの開始時刻表示
+- **基本的なプレイヤー**: 標準的な音声再生機能
+- **台本表示**: 静的なテキストとして台本を表示
 
 ```typescript
 interface PlaybackView {
   audioUrl: string;
-  report: {
+  script: {
     sections: Array<{
-      title: string;
       speaker: string;
       text: string;
-      statistics?: StatisticsData;
-      startTime: number;  // 秒
-      endTime: number;    // 秒
     }>;
   };
-  currentTime: number;
-  isPlaying: boolean;
 }
 ```
 
-### 6. データビジュアライゼーション
+### 6. 台本表示
 
-#### 統計ダッシュボード仕様
-分析完了後、音声生成を待たずに統計情報を表示。
+#### 生成された台本
+台本生成完了後、音声生成を待たずに台本をテキストで表示。
 
-**表示項目**:
-- **活動サマリー**: 総活動数、カテゴリー別分布
-- **キーワードクラウド**: 頻出キーワードの視覚化
+**表示内容**:
+- **スピーカー名**: 発言者の名前を明示
+- **発言内容**: 生成された台本をそのまま表示
 
 ```typescript
-interface StatisticsData {
-  totalActivities: number;
-  categoryDistribution: {
-    work: number;
-    learning: number;
-    health: number;
-    personal: number;
-    other: number;
-  };
-  topKeywords: Array<{ word: string; count: number }>;
+interface ScriptData {
+  sections: Array<{
+    speaker: string;
+    text: string;
+  }>;
 }
 ```
 
@@ -212,69 +197,40 @@ Response:
   "status": "synthesizing_voice",
   "progress": 60,
   "message": "音声を生成中...",
-  "statisticsAvailable": true,  // 統計が閲覧可能
-  "scriptAvailable": true,       // レポートが閲覧可能
+  "scriptAvailable": true,  // 台本が閲覧可能
   "estimatedTimeRemaining": 30
 }
 ```
 
-#### 4. 統計データ取得（音声生成前）
+#### 4. 台本取得（音声生成前）
 ```http
-GET /api/jobs/{jobId}/statistics
-
-Response:
-{
-  "jobId": "...",
-  "status": "analyzing_data",
-  "statistics": {
-    "totalActivities": 12,
-    "categoryDistribution": {
-      "work": 5,
-      "learning": 3,
-      "health": 2,
-      "personal": 2,
-      "other": 0
-    },
-    "topKeywords": [
-      { "word": "TypeScript", "count": 4 },
-      { "word": "プロジェクト", "count": 3 },
-      { "word": "完了", "count": 3 }
-    ]
-  }
-}
-```
-
-#### 5. レポート取得（音声生成前）
-```http
-GET /api/jobs/{jobId}/report
+GET /api/jobs/{jobId}/script
 
 Response:
 {
   "jobId": "...",
   "status": "script_ready",
-  "report": {
+  "script": {
     "title": "2025年1月22日のToday's You",
     "sections": [
       {
-        "id": "s1",
-        "type": "opening",
         "speaker": "あかり",
-        "text": "こんにちは。Today's Youの時間です。",
-        "emotion": "professional"
+        "text": "こんにちは。Today's Youの時間です。今日も頑張ったあなたの活動をチェックしていきましょう。"
       },
       {
-        "id": "s2",
-        "type": "statistics",
         "speaker": "けんた",
-        "text": "本日は総計12件の活動が記録されました。",
-        "statistics": { ... }
+        "text": "本日は総計12件の活動が記録されました。TypeScriptのタスクに特に力を入れていたことが伝わってきますね。"
+      },
+      {
+        "speaker": "あかり",
+        "text": "そうですね！プロジェクトを完了させたこともとても素晴らしいです。明日も頑張ってくださいね。"
       }
     ]
   }
 }
 ```
 
-#### 6. 最終結果取得（音声付き）
+#### 5. 最終結果取得（音声付き）
 ```http
 GET /api/jobs/{jobId}/result
 
@@ -283,29 +239,24 @@ Response:
   "jobId": "...",
   "status": "completed",
   "audioUrl": "https://storage.googleapis.com/...",
-  "report": {
+  "script": {
     "title": "2025年1月22日のToday's You",
     "sections": [
       {
-        "id": "s1",
-        "type": "opening",
         "speaker": "あかり",
-        "text": "こんにちは。Today's Youの時間です。",
-        "startTime": 0.0,
-        "endTime": 2.5
+        "text": "こんにちは。Today's Youの時間です。今日も頑張ったあなたの活動をチェックしていきましょう。"
       },
       {
-        "id": "s2",
-        "type": "statistics",
         "speaker": "けんた",
-        "text": "本日は総計12件の活動が記録されました。",
-        "startTime": 2.5,
-        "endTime": 5.8,
-        "statistics": { ... }
+        "text": "本日は総計12件の活動が記録されました。TypeScriptのタスクに特に力を入れていたことが伝わってきますね。"
+      },
+      {
+        "speaker": "あかり",
+        "text": "そうですね！プロジェクトを完了させたこともとても素晴らしいです。明日も頑張ってくださいね。"
       }
     ]
   },
-  "duration": 300,  // 総再生時間（秒）
+  "duration": 300,
   "expiresAt": "2025-01-23T12:00:00Z"
 }
 ```
@@ -383,7 +334,22 @@ Response:
    - ファイルシステムベースの一時ファイル管理
    - 生成済みファイルの管理
 
-### Phase 3: Cloud Run移行 (2週間)
+### Phase 3: UX改善 (1週間)
+
+1. **リッチUI**
+   - プログレスバー
+   - 台本表示の改善
+
+2. **台本表示の実装**
+   - 生成された台本をそのまま表示
+   - スピーカー別の発言内容
+
+3. **共有機能**
+   - 短縮URL
+   - SNS共有
+   - 台本のみ共有
+
+### Phase 4: Cloud Run移行 (2週間)
 
 1. **クラウド対応**
    - Dockerfile作成
@@ -398,22 +364,6 @@ Response:
 3. **CI/CD**
    - GitHub Actions設定
    - 自動デプロイ
-
-### Phase 4: UX改善 (1週間)
-
-1. **リッチUI**
-   - プログレスバー
-   - 統計ダッシュボード（音声生成前）
-   - 同期再生ビュー
-
-2. **データビジュアライゼーション**
-   - 活動サマリー（円グラフ）
-   - キーワードクラウド
-
-3. **共有機能**
-   - 短縮URL
-   - SNS共有
-   - レポートのみ共有
 
 ### Phase 5: スケール対応 (1週間)
 
@@ -444,7 +394,7 @@ Response:
 ```mermaid
 graph LR
     A[入力画面] --> B[分析中画面]
-    B --> C[統計ダッシュボード]
+    B --> C[台本表示]
     C --> D[音声生成中]
     D --> E[再生画面]
     
@@ -463,20 +413,17 @@ graph LR
 #### 分析中画面
 - **上部**: 進捗バーと状態メッセージ
 - **中央**: 分析ステータス表示
-- **下部**: 「統計を見る」ボタン（分析完成後に有効化）
+- **下部**: 「台本を見る」ボタン（台本生成完成後に有効化）
 
-#### 統計ダッシュボード画面
-- **活動サマリー**: カテゴリー別分布を円グラフで表示
-- **キーワードクラウド**: 頻出キーワードをワードクラウド形式で表示
-- **下部**: 「レポートを聴く」「入力に戻る」ボタン
+#### 台本表示画面
+- **台本テキスト**: 生成された台本をスピーカー名とともに表示
+- **下部**: 「音声を聴く」「入力に戻る」ボタン
 
 #### 再生画面
 - **上部**: オーディオプレイヤー
-- **中央**: レポート表示エリア（自動スクロール）
-- **サイドバー**: 統計サマリー（デスクトップのみ）
+- **中央**: レポート表示エリア（静的テキスト）
 - **コントロール**: 
   - 再生/一時停止
-  - 10秒戻る/進む
   - 再生速度（0.75x, 1x, 1.25x, 1.5x）
 
 ### 3. レスポンシブデザイン
@@ -501,15 +448,9 @@ graph LR
 - **要素出現**: フェードイン
 - **進捗更新**: スムーズなプログレスバー
 
-#### データビジュアライゼーション
-- **グラフ描画**: 段階的なアニメーション
-- **数値カウントアップ**: 0から実数値へ
-- **キーワード出現**: フェードイン効果
-
-#### 再生画面アニメーション
-- **セクション切り替え**: スムーズスクロール
-- **ハイライト**: 背景色の変化
-- **一時停止/再生**: アイコンモーフィング
+#### 基本アニメーション
+- **数値表示**: シンプルな表示
+- **一時停止/再生**: 基本的なアイコン変更
 
 ### 5. カラーパレット
 
@@ -530,12 +471,9 @@ graph LR
   --text-primary: #1a202c;
   --text-secondary: #4a5568;
   
-  /* データビジュアライゼーション */
-  --chart-1: #3182ce;
-  --chart-2: #63b3ed;
-  --chart-3: #90cdf4;
-  --chart-4: #bee3f8;
-  --chart-5: #e0e7ff;
+  /* 台本表示 */
+  --script-speaker: #3182ce;
+  --script-text: #2d3748;
   
   /* ステータスカラー */
   --success: #48bb78;
@@ -653,61 +591,50 @@ env_variables:
 
 ### 4. フロントエンド実装考慮点
 
-#### レポート同期再生の実装
+#### シンプルな音声再生の実装
 ```typescript
-// 音声再生とレポート同期のサンプルコード
-class SyncedPlayback {
+// 基本的な音声再生機能
+class SimpleAudioPlayer {
   private audio: HTMLAudioElement;
-  private sections: SectionWithTiming[];
   
-  constructor(audioUrl: string, sections: SectionWithTiming[]) {
+  constructor(audioUrl: string) {
     this.audio = new Audio(audioUrl);
-    this.sections = sections;
-    
-    // タイムアップデートイベントで現在のセクションをハイライト
-    this.audio.addEventListener('timeupdate', () => {
-      const currentTime = this.audio.currentTime;
-      const currentSection = this.findCurrentSection(currentTime);
-      this.highlightSection(currentSection);
-    });
   }
   
-  private findCurrentSection(time: number): SectionWithTiming | null {
-    return this.sections.find(s => 
-      time >= s.startTime && time < s.endTime
-    ) || null;
+  play() {
+    this.audio.play();
+  }
+  
+  pause() {
+    this.audio.pause();
+  }
+  
+  setPlaybackRate(rate: number) {
+    this.audio.playbackRate = rate;
   }
 }
 ```
 
-#### データビジュアライゼーションの実装
+#### 台本表示の実装
 ```typescript
-// 統計ダッシュボードのサンプル
-class StatisticsDashboard {
-  private chartLibrary: ChartJS; // or D3.js
-  
-  renderCategoryDistribution(data: CategoryDistribution) {
-    const ctx = document.getElementById('categoryChart');
-    new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: ['業務', '学習', '健康', '個人', 'その他'],
-        datasets: [{
-          data: Object.values(data),
-          backgroundColor: [
-            '#3182ce',
-            '#63b3ed',
-            '#90cdf4',
-            '#bee3f8',
-            '#e0e7ff'
-          ]
-        }]
-      }
-    });
-  }
-  
-  renderKeywordCloud(keywords: Keyword[]) {
-    // D3.js word cloud implementation
+// シンプルな台本表示
+class ScriptDisplay {
+  renderScript(scriptData: ScriptData) {
+    const container = document.getElementById('scriptContainer');
+    const html = `
+      <div class="script-section">
+        <h2>${scriptData.title}</h2>
+        <div class="script-content">
+          ${scriptData.sections.map(section => `
+            <div class="script-section">
+              <div class="speaker">${section.speaker}:</div>
+              <div class="text">${section.text}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+    container.innerHTML = html;
   }
 }
 ```
@@ -747,13 +674,13 @@ PersonalCastのCloud Run化により、以下のメリットが期待できま�
    - 統計分析が完成したら即座に閲覧可能
    - 音声生成を待たずにデータを確認できる
 
-2. **データドリブンな体験**
-   - 活動の可視化による気づきの提供
-   - 客観的なデータに基づく分析
+2. **シンプルな台本表示**
+   - 生成された台本をそのまま表示
+   - スピーカー別の発言を明確に区別
 
-3. **インタラクティブな再生体験**
-   - 音声とレポートが同期してスクロール
-   - 現在のセクションがハイライト表示
-   - クリックで任意の位置から再生
+3. **基本的な再生体験**
+   - シンプルな音声プレイヤー
+   - 静的なレポート表示
+   - 基本的な再生コントロール
 
-これらの機能により、単なる音声生成ツールから、個人の活動を客観的に分析・可視化するプロフェッショナルなサービスへと進化します。初期実装はシンプルに始め、段階的に機能を追加していくアプローチを推奨します。
+これらのシンプルな機能により、メンテナンスしやすく使いやすいサービスを提供します。初期実装はシンプルに始め、必要に応じて機能を追加していくアプローチを推奨します。
