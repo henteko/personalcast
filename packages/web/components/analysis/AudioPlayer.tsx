@@ -151,6 +151,21 @@ export function AudioPlayer({ audioUrl, script, duration }: AudioPlayerProps) {
           ))}
         </div>
       </div>
+
+      {/* BGM Credit */}
+      <div className="mt-6 pt-4 border-t border-gray-200 text-center">
+        <p className="text-xs text-text-secondary">
+          BGM: フリーBGM・音楽素材MusMus{' '}
+          <a 
+            href="https://musmus.main.jp" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-primary-blue hover:text-primary-light-blue underline"
+          >
+            https://musmus.main.jp
+          </a>
+        </p>
+      </div>
     </div>
   );
 }

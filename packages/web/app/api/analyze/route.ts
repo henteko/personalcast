@@ -7,6 +7,7 @@ import path from 'path';
 
 // Initialize storage adapters
 const tempStorage = new LocalStorageAdapter(process.env.LOCAL_TEMP_DIR || './temp');
+const outputStorage = new LocalStorageAdapter(process.env.LOCAL_OUTPUT_DIR || './output');
 
 // Validation function
 function validateRequest(body: any): { valid: boolean; error?: string } {
@@ -173,17 +174,34 @@ export async function processJob(jobId: string) {
     const normalizedAudio = await personalCast.normalizeAudioVolume(combinedAudio);
 
     // Export to MP3
-    const outputFileName = `${jobId}.mp3`;
-    const outputPath = path.resolve(process.env.LOCAL_OUTPUT_DIR || './output', outputFileName);
-    await personalCast.exportAudioToMP3(normalizedAudio, outputPath);
+    const finalOutputFileName = `${jobId}.mp3`;
+    const finalOutputPath = path.resolve(process.env.LOCAL_OUTPUT_DIR || './output', finalOutputFileName);
+    await personalCast.exportAudioToMP3(normalizedAudio, finalOutputPath);
     
-    // Clean up temp memo file
+    // Add BGM
+    jobManager.updateJob(jobId, {
+      progress: 95,
+      message: 'BGMを追加中...'
+    });
+    
+    const bgmPath = path.resolve(process.cwd(), 'public/audio/bgm.mp3');
+    
+    await personalCast.addBGMToAudio(finalOutputPath, bgmPath, {
+      bgmVolume: 0.3,
+      ducking: 0.15,
+      fadeIn: 3,
+      fadeOut: 3,
+      intro: 5,
+      outro: 5
+    });
+    
+    // Clean up temp files
     await tempStorage.delete(tempMemoPath);
 
     // Update job as completed
     jobManager.updateJob(jobId, {
       status: GenerationStatus.COMPLETED,
-      audioPath: outputFileName,
+      audioPath: finalOutputFileName,
       progress: 100,
       message: '生成が完了しました'
     });

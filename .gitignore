@@ -68,3 +68,5 @@ sample_memo.txt
 dist/
 
 !docs/sample.mp3
+
+!packages/web/public/audio/bgm.mp3
