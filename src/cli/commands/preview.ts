@@ -45,11 +45,11 @@ export async function previewCommand(options: PreviewOptions): Promise<void> {
     const script =
       options.type === 'weekly'
         ? await cheerCast.previewWeeklyScript(options.input, {
-            style: options.style as 'gentle' | 'energetic',
+            style: options.style as 'analytical' | 'comprehensive',
             onProgress: (message: string) => console.log(`  ${message}`),
           })
         : await cheerCast.previewScript(options.input, {
-            style: options.style as 'gentle' | 'energetic',
+            style: options.style as 'analytical' | 'comprehensive',
             onProgress: (message: string) => console.log(`  ${message}`),
           });
 

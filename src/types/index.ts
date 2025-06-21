@@ -55,15 +55,15 @@ export enum PersonalityType {
 }
 
 export enum EmotionType {
-  HAPPY = 'happy',
-  EXCITED = 'excited',
-  GENTLE = 'gentle',
-  ENCOURAGING = 'encouraging',
+  PROFESSIONAL = 'professional',
+  ANALYTICAL = 'analytical',
+  INFORMATIVE = 'informative',
+  NEUTRAL = 'neutral',
 }
 
 export interface RadioConfig {
   duration: number;
-  style: PraiseStyle;
+  style: AnalysisStyle;
   personalities: {
     host1: PersonalityConfig;
     host2: PersonalityConfig;
@@ -76,10 +76,13 @@ export interface PersonalityConfig {
   character: string;
 }
 
-export enum PraiseStyle {
-  GENTLE = 'gentle',
-  ENERGETIC = 'energetic',
+export enum AnalysisStyle {
+  ANALYTICAL = 'analytical',
+  COMPREHENSIVE = 'comprehensive',
 }
+
+// Legacy alias for backward compatibility
+export { AnalysisStyle as PraiseStyle };
 
 export interface VoiceConfig {
   languageCode: string;
@@ -96,7 +99,7 @@ export interface AudioBuffer {
 export interface GenerationOptions {
   outputPath: string;
   type?: 'daily' | 'weekly';
-  style?: 'gentle' | 'energetic';
+  style?: 'analytical' | 'comprehensive';
   duration?: number;
   voiceSpeed?: number;
   bgm?: {

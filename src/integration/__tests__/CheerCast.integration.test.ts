@@ -10,7 +10,7 @@ jest.mock('../../core/generator/ScriptGenerator');
 jest.mock('../../core/voice/GeminiVoiceGenerator');
 jest.mock('../../core/mixer/AudioMixer');
 
-describe('CheerCast Integration Tests', () => {
+describe('PersonalCast Integration Tests', () => {
   let cheerCast: CheerCast;
   let tempDir: string;
   let mockScriptGenerator: jest.Mocked<ScriptGenerator>;
@@ -21,7 +21,7 @@ describe('CheerCast Integration Tests', () => {
     jest.clearAllMocks();
 
     // Create temp directory for test files
-    tempDir = path.join('/tmp', `cheercast-test-${Date.now()}`);
+    tempDir = path.join('/tmp', `personalcast-test-${Date.now()}`);
     await fs.mkdir(tempDir, { recursive: true });
 
     // Create mock instances
@@ -54,7 +54,7 @@ describe('CheerCast Integration Tests', () => {
   });
 
   describe('End-to-End Workflow', () => {
-    it('should generate radio show from a single memo file', async () => {
+    it('should generate news program from a single memo file', async () => {
       // Create test memo file
       const memoPath = path.join(tempDir, 'test_memo.txt');
       const memoContent = `2024-01-20 の日記
@@ -65,11 +65,11 @@ describe('CheerCast Integration Tests', () => {
 
       // Mock script generation
       const mockScript = {
-        title: 'テストラジオ',
+        title: 'テストニュース',
         date: new Date('2024-01-20'),
         dialogues: [
           { personality: 'あかり', content: 'こんにちは！' },
-          { personality: 'けんた', content: '今日も頑張りましたね！' },
+          { personality: 'けんた', content: '本日のレポートです' },
         ],
       };
       mockScriptGenerator.generateScript.mockResolvedValue(mockScript);
@@ -86,11 +86,11 @@ describe('CheerCast Integration Tests', () => {
       mockAudioMixer.combineAudio.mockResolvedValue(mockCombinedAudio);
       mockAudioMixer.normalizeVolume.mockResolvedValue(mockCombinedAudio);
 
-      // Generate radio show
+      // Generate news program
       const outputPath = path.join(tempDir, 'output.mp3');
       await cheerCast.generateFromFile(memoPath, {
         outputPath,
-        style: 'gentle',
+        style: 'analytical',
       });
 
       // Verify the workflow
@@ -104,7 +104,7 @@ describe('CheerCast Integration Tests', () => {
             }),
           ]),
         }),
-        expect.objectContaining({ style: 'gentle' }),
+        expect.objectContaining({ style: 'analytical' }),
       );
 
       // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -135,11 +135,11 @@ describe('CheerCast Integration Tests', () => {
 
       // Mock responses
       const mockScript = {
-        title: '週間まとめラジオ',
+        title: '週間まとめニュース',
         date: new Date('2024-01-17'),
         dialogues: [
-          { personality: 'あかり', content: '今週もお疲れ様でした！' },
-          { personality: 'けんた', content: '素晴らしい一週間でしたね！' },
+          { personality: 'あかり', content: '今週のまとめをお伝えします' },
+          { personality: 'けんた', content: '注目すべき成果が多数ありました' },
         ],
       };
       mockScriptGenerator.generateScript.mockResolvedValue(mockScript);
@@ -154,12 +154,12 @@ describe('CheerCast Integration Tests', () => {
       mockAudioMixer.combineAudio.mockResolvedValue(mockFinalAudio);
       mockAudioMixer.normalizeVolume.mockResolvedValue(mockFinalAudio);
 
-      // Generate weekly radio show
+      // Generate weekly news program
       const outputPath = path.join(tempDir, 'weekly.mp3');
       await cheerCast.generateFromDirectory(tempDir, {
         outputPath,
         type: 'weekly',
-        style: 'energetic',
+        style: 'comprehensive',
       });
 
       // Verify weekly processing
@@ -172,7 +172,7 @@ describe('CheerCast Integration Tests', () => {
             expect.objectContaining({ description: expect.stringContaining('実装開始') }),
           ]),
         }),
-        expect.objectContaining({ style: 'energetic' }),
+        expect.objectContaining({ style: 'comprehensive' }),
       );
     });
   });
@@ -244,7 +244,7 @@ describe('CheerCast Integration Tests', () => {
       mockScriptGenerator.generateScript.mockResolvedValue(mockScript);
 
       const result = await cheerCast.previewScript(memoPath, {
-        style: 'gentle',
+        style: 'analytical',
       });
 
       expect(result).toEqual(mockScript);

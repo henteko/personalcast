@@ -6,7 +6,7 @@ import {
   ActivityCategory,
   SegmentType,
   PersonalityType,
-  PraiseStyle,
+  AnalysisStyle,
 } from '../../../types';
 
 jest.mock('../../../services/gemini-api/GeminiAPIClient');
@@ -14,10 +14,10 @@ jest.mock('../../../config', () => ({
   config: {
     get: () => ({
       personalities: {
-        host1: { name: 'あかり', character: '優しくて励まし上手' },
-        host2: { name: 'けんた', character: '明るくて分析好き' },
+        host1: { name: 'あかり', character: '冷静で分析的なメインキャスター' },
+        host2: { name: 'けんた', character: '洞察力のあるコメンテーター' },
       },
-      praise: { style: 'gentle' },
+      praise: { style: 'analytical' },
       audio: { duration: 10 },
     }),
   },
@@ -36,7 +36,7 @@ describe('ScriptGenerator', () => {
   });
 
   describe('generateScript', () => {
-    it('should generate a radio script from parsed memo', async () => {
+    it('should generate a news script from parsed memo', async () => {
       const memo: ParsedMemo = {
         date: new Date('2024-01-20'),
         content: '今日はプロジェクトを完了させた。',
@@ -51,16 +51,16 @@ describe('ScriptGenerator', () => {
       };
 
       const mockResponse = `[オープニング]
-あかり: こんにちは！CheerCastの時間です。私、あかりと
+あかり: こんにちは！Today's Youの時間です。私、あかりと
 けんた: けんたがお送りします！
 
 [メイン]
-あかり: 今日はプロジェクトを完了させたんですね！
-けんた: すごい！大きな達成ですね！
+あかり: 今日はプロジェクトを完了させたんですね。
+けんた: 重要な達成として記録されました。
 
 [エンディング]
-あかり: 明日も素敵な一日になりますように！
-けんた: また明日も頑張りましょう！`;
+あかり: 明日の活動も注目していきます。
+けんた: それでは、また明日！`;
 
       mockGeminiClient.generateContentWithRetry.mockResolvedValue(mockResponse);
 
@@ -84,10 +84,10 @@ describe('ScriptGenerator', () => {
 
       mockGeminiClient.generateContentWithRetry.mockResolvedValue('[オープニング]\nあかり: テスト');
 
-      await generator.generateScript(memo, { style: PraiseStyle.ENERGETIC });
+      await generator.generateScript(memo, { style: AnalysisStyle.COMPREHENSIVE });
 
       const callArgs = mockGeminiClient.generateContentWithRetry.mock.calls[0][0];
-      expect(callArgs).toContain('エネルギッシュ');
+      expect(callArgs).toContain('包括的');
     });
   });
 
@@ -105,11 +105,11 @@ describe('ScriptGenerator', () => {
         positiveElements: ['頑張った'],
       };
 
-      const prompt = generator.createPrompt(memo, PraiseStyle.GENTLE);
+      const prompt = generator.createPrompt(memo, AnalysisStyle.ANALYTICAL);
 
       expect(prompt).toContain('あかり');
       expect(prompt).toContain('けんた');
-      expect(prompt).toContain('優しく');
+      expect(prompt).toContain('分析的');
       expect(prompt).toContain('英語の勉強を3時間');
       expect(prompt).toContain('[オープニング]');
       expect(prompt).toContain('[メイン]');
@@ -128,7 +128,7 @@ describe('ScriptGenerator', () => {
         positiveElements: [],
       };
 
-      const prompt = generator.createPrompt(memo, PraiseStyle.GENTLE);
+      const prompt = generator.createPrompt(memo, AnalysisStyle.ANALYTICAL);
 
       expect(prompt).toContain('仕事');
       expect(prompt).toContain('運動');
@@ -137,17 +137,17 @@ describe('ScriptGenerator', () => {
   });
 
   describe('parseGeminiResponse', () => {
-    it('should parse valid Gemini response into RadioScript', () => {
+    it('should parse valid Gemini response into NewsScript', () => {
       const response = `[オープニング]
 あかり: こんにちは！
-けんた: 今日も頑張りましたね！
+けんた: 本日の活動レポートです。
 
 [メイン]
-あかり: プロジェクトの完成、おめでとうございます！
-けんた: 本当に素晴らしい成果ですね。
+あかり: プロジェクトの完成が確認されました。
+けんた: 重要な成果として記録されます。
 
 [エンディング]
-あかり: 明日も応援しています！
+あかり: 明日の活動も注目です。
 けんた: また明日！`;
 
       const script = generator.parseGeminiResponse(response);

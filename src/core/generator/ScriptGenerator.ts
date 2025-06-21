@@ -7,7 +7,7 @@ import {
   DialogueLine,
   SegmentType,
   PersonalityType,
-  PraiseStyle,
+  AnalysisStyle,
   RadioConfig,
 } from '../../types';
 
@@ -49,10 +49,10 @@ export class ScriptGenerator {
     }
   }
 
-  createPrompt(memo: ParsedMemo, style: PraiseStyle): string {
+  createPrompt(memo: ParsedMemo, style: AnalysisStyle): string {
     const personalities = config.get().personalities;
     const styleDescription =
-      style === PraiseStyle.GENTLE ? '優しく温かく' : 'エネルギッシュに元気よく';
+      style === AnalysisStyle.ANALYTICAL ? '分析的に詳細に' : '包括的に幅広く';
 
     const activitiesText = memo.activities
       .map((activity) => `- ${activity.description}`)
@@ -62,15 +62,15 @@ export class ScriptGenerator {
 
     const radioShowName = config.get().radioShowName ?? 'CheerCast';
 
-    return `あなたは2人のラジオパーソナリティです。
-以下の設定で、リスナーの今日の活動を褒めるラジオ番組「${radioShowName}」の台本を作成してください。
+    return `あなたは2人のニュースキャスターです。
+以下の設定で、ユーザーの今日の活動を分析・報告するニュース番組「${radioShowName}」の台本を作成してください。
 
-【パーソナリティ設定】
+【キャスター設定】
 1. ${personalities.host1.name}（女性）: ${personalities.host1.character}
 2. ${personalities.host2.name}（男性）: ${personalities.host2.character}
 
-【褒めるスタイル】
-${styleDescription}褒めてください。
+【分析スタイル】
+${styleDescription}分析してください。
 
 【今日の活動】
 ${activitiesText}
@@ -83,16 +83,16 @@ ${positiveElementsText}
 
 [オープニング]
 - 挨拶と番組「${radioShowName}」の紹介
-- 今日も頑張ったリスナーへの労い
+- 本日のトップニュースの概要
 
 [メイン]
-- 具体的な活動について褒める
-- それぞれの活動の価値や意味を伝える
-- 励ましの言葉
+- 具体的な活動の分析
+- 成果とその意義の評価
+- 活動のトレンドとパターン
 
 [エンディング]
-- 今日の総括
-- 明日への励まし
+- 本日のまとめ
+- 明日の注目ポイント
 - 締めの挨拶
 
 【重要な注意事項】
@@ -100,7 +100,7 @@ ${positiveElementsText}
 - 各発言は「${personalities.host1.name}: 」または「${personalities.host2.name}: 」で始めてください
 - 自然な会話のキャッチボールを心がけてください
 - 具体的な活動内容に言及してください
-- ポジティブで前向きな内容にしてください
+- 客観的でプロフェッショナルな内容にしてください
 
 台本を作成してください：`;
   }
@@ -191,7 +191,7 @@ ${positiveElementsText}
 
     return {
       duration: customConfig?.duration ?? defaultConfig.audio.duration,
-      style: customConfig?.style ?? (defaultConfig.praise.style as PraiseStyle),
+      style: customConfig?.style ?? (defaultConfig.praise.style as AnalysisStyle),
       personalities: customConfig?.personalities ?? defaultConfig.personalities,
     };
   }

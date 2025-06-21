@@ -3,21 +3,21 @@ import * as path from 'path';
 import * as readline from 'readline';
 
 const DEFAULT_CONFIG = {
-  radioShowName: 'CheerCast',
+  radioShowName: "Today's You",
   personalities: {
     host1: {
       name: 'あかり',
       voiceName: 'Kore',
-      character: '優しくて励まし上手',
+      character: '冷静で分析的なメインキャスター',
     },
     host2: {
       name: 'けんた',
       voiceName: 'Puck',
-      character: '明るくて分析好き',
+      character: '洞察力のあるコメンテーター',
     },
   },
   praise: {
-    style: 'gentle',
+    style: 'analytical',
     focusAreas: ['work', 'learning', 'health'],
   },
   audio: {
@@ -31,7 +31,7 @@ const DEFAULT_CONFIG = {
 };
 
 export async function initCommand(): Promise<void> {
-  console.log('🎙️  CheerCast 初期設定ウィザード');
+  console.log('🎙️  PersonalCast 初期設定ウィザード');
   console.log('='.repeat(50));
   console.log();
 
@@ -50,7 +50,7 @@ export async function initCommand(): Promise<void> {
 
   try {
     // Check for existing config
-    const configPath = path.join(process.cwd(), 'cheercast.config.json');
+    const configPath = path.join(process.cwd(), 'personalcast.config.json');
 
     try {
       await fs.access(configPath);
@@ -73,14 +73,14 @@ GEMINI_API_KEY=your-gemini-api-key
 
 # オプション設定
 DEFAULT_DURATION=10
-DEFAULT_STYLE=gentle`;
+DEFAULT_STYLE=analytical`;
 
     await fs.writeFile(envExamplePath, envContent);
     console.log('✅ .env.example を作成しました');
 
     // Create config file
     await fs.writeFile(configPath, JSON.stringify(DEFAULT_CONFIG, null, 2));
-    console.log('✅ cheercast.config.json を作成しました');
+    console.log('✅ personalcast.config.json を作成しました');
 
     // Create sample memo
     const sampleMemoPath = path.join(process.cwd(), 'sample_memo.txt');
@@ -104,7 +104,7 @@ DEFAULT_STYLE=gentle`;
     console.log('   cp .env.example .env');
     console.log('2. Gemini APIキーを取得してください');
     console.log('   https://aistudio.google.com/app/apikey');
-    console.log('3. cheercast generate -i sample_memo.txt でテスト実行できます');
+    console.log('3. personalcast generate -i sample_memo.txt でテスト実行できます');
     console.log();
     console.log('詳細は README.md をご覧ください。');
 

@@ -52,12 +52,12 @@ export function validateProgramType(type: string): ValidationResult {
 }
 
 export function validatePraiseStyle(style: string): ValidationResult {
-  const validStyles = ['gentle', 'energetic'];
+  const validStyles = ['analytical', 'comprehensive'];
 
   if (!validStyles.includes(style)) {
     return {
       valid: false,
-      error: `Invalid praise style. Must be one of: ${validStyles.join(', ')}`,
+      error: `Invalid analysis style. Must be one of: ${validStyles.join(', ')}`,
     };
   }
 

@@ -3,7 +3,7 @@ import { ScriptGenerator } from './core/generator/ScriptGenerator';
 import { GeminiVoiceGenerator } from './core/voice/GeminiVoiceGenerator';
 import { AudioMixer } from './core/mixer/AudioMixer';
 import { FFmpegService } from './services/ffmpeg/FFmpegService';
-import { ParsedMemo, RadioScript, GenerationOptions, PraiseStyle } from './types';
+import { ParsedMemo, RadioScript, GenerationOptions, AnalysisStyle } from './types';
 import * as fs from 'fs/promises';
 
 export class CheerCast {
@@ -41,9 +41,9 @@ export class CheerCast {
       const memo = await this.memoParser.parseTextFile(filePath);
 
       // Generate script
-      options.onProgress?.('ラジオ台本を生成中...');
+      options.onProgress?.('ニュース台本を生成中...');
       const script = await this.scriptGenerator.generateScript(memo, {
-        style: options.style as PraiseStyle | undefined,
+        style: options.style as AnalysisStyle | undefined,
         duration: options.duration,
       });
 
@@ -102,9 +102,9 @@ export class CheerCast {
       const combinedMemo = this.combineMemos(memos);
 
       // Generate script
-      options.onProgress?.('ラジオ台本を生成中...');
+      options.onProgress?.('ニュース台本を生成中...');
       const script = await this.scriptGenerator.generateScript(combinedMemo, {
-        style: options.style as PraiseStyle | undefined,
+        style: options.style as AnalysisStyle | undefined,
         duration: options.duration,
       });
 
@@ -159,7 +159,7 @@ export class CheerCast {
 
     options.onProgress?.('ラジオ台本を生成中...');
     return this.scriptGenerator.generateScript(memo, {
-      style: options.style as PraiseStyle | undefined,
+      style: options.style as AnalysisStyle | undefined,
       duration: options.duration,
     });
   }
@@ -177,7 +177,7 @@ export class CheerCast {
 
     options.onProgress?.('ラジオ台本を生成中...');
     return this.scriptGenerator.generateScript(combinedMemo, {
-      style: options.style as PraiseStyle | undefined,
+      style: options.style as AnalysisStyle | undefined,
       duration: options.duration,
     });
   }

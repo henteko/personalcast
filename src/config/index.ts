@@ -49,7 +49,7 @@ class Config {
 
   private loadConfig(): AppConfig {
     const defaultConfig: AppConfig = {
-      radioShowName: 'CheerCast',
+      radioShowName: "Today's You",
       gemini: {
         model: 'gemini-2.5-flash',
         temperature: 0.7,
@@ -58,16 +58,16 @@ class Config {
         host1: {
           name: 'あかり',
           voiceName: 'Kore',
-          character: '優しくて励まし上手',
+          character: '冷静で分析的なメインキャスター',
         },
         host2: {
           name: 'けんた',
           voiceName: 'Puck',
-          character: '明るくて分析好き',
+          character: '洞察力のあるコメンテーター',
         },
       },
       praise: {
-        style: 'gentle',
+        style: 'analytical',
         focusAreas: ['work', 'learning', 'health'],
       },
       audio: {
@@ -77,7 +77,7 @@ class Config {
     };
 
     // Check for config file
-    const configPath = path.join(process.cwd(), 'cheercast.config.json');
+    const configPath = path.join(process.cwd(), 'personalcast.config.json');
     if (fs.existsSync(configPath)) {
       try {
         const userConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8')) as Partial<AppConfig>;

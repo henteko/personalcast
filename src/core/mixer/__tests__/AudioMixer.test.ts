@@ -87,7 +87,7 @@ describe('AudioMixer', () => {
   describe('exportToMP3', () => {
     it('should export audio buffer to MP3 file', async () => {
       const audio = Buffer.from('final audio');
-      const outputPath = '/output/radio.mp3';
+      const outputPath = '/output/news.mp3';
 
       mockFs.writeFile.mockResolvedValue(undefined);
 
@@ -112,7 +112,7 @@ describe('AudioMixer', () => {
 
     it('should handle write errors', async () => {
       const audio = Buffer.from('audio');
-      const outputPath = '/output/radio.mp3';
+      const outputPath = '/output/news.mp3';
 
       mockFs.writeFile.mockRejectedValue(new Error('Write failed'));
 

@@ -76,7 +76,7 @@ export async function executeGenerateCommand(options: GenerateOptions): Promise<
   }
 
   try {
-    progress.start('CheerCast ラジオ番組生成を開始します...');
+    progress.start('PersonalCast ニュース番組生成を開始します...');
 
     // Create CheerCast instance
     const cheerCast = new CheerCast();
@@ -84,7 +84,7 @@ export async function executeGenerateCommand(options: GenerateOptions): Promise<
     // Create generation options with progress callback
     const generationOptions: GenerationOptions = {
       outputPath: options.output,
-      style: options.style as 'gentle' | 'energetic',
+      style: options.style as 'analytical' | 'comprehensive',
       duration: parseInt(options.duration),
       voiceSpeed: options.voiceSpeed,
       onProgress: (message: string) => progress.update(message),
@@ -110,7 +110,7 @@ export async function executeGenerateCommand(options: GenerateOptions): Promise<
       await cheerCast.generateFromFile(options.input, generationOptions);
     }
 
-    progress.complete(`ラジオ番組の生成が完了しました: ${options.output}`);
+    progress.complete(`ニュース番組の生成が完了しました: ${options.output}`);
   } catch (error) {
     progress.error(error instanceof Error ? error.message : '不明なエラーが発生しました');
     process.exit(1);

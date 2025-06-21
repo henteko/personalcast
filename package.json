@@ -1,10 +1,10 @@
 {
-  "name": "cheercast",
+  "name": "personalcast",
   "version": "0.1.0",
-  "description": "毎日のメモから2人のパーソナリティがあなたの頑張りを褒めてくれるラジオ番組を自動生成するCLIツール",
+  "description": "毎日のメモから2人のキャスターがあなたの活動を分析・紹介するパーソナルニュース番組を自動生成するCLIツール",
   "main": "dist/index.js",
   "bin": {
-    "cheercast": "dist/src/cli/index.js"
+    "personalcast": "dist/src/cli/index.js"
   },
   "directories": {
     "doc": "docs"
@@ -23,10 +23,11 @@
   },
   "keywords": [
     "cli",
-    "radio",
+    "news",
     "ai",
     "tts",
-    "motivation"
+    "analysis",
+    "personal"
   ],
   "author": "",
   "license": "MIT",
