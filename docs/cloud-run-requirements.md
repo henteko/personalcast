@@ -26,13 +26,13 @@ PersonalCastをGoogle Cloud Run上でWebアプリケーションとして動作�
 ### 主要コンポーネント
 
 1. **Web フロントエンド**
-   - React/Vue.js/Next.js によるSPA
+   - Next.js によるレンダリング
    - 活動記録入力フォーム
    - 分析進捗表示
    - レポートプレイヤー
 
 2. **バックエンドAPI**
-   - REST API エンドポイント（Express.js）
+   - REST API エンドポイント（Next.js）
    - 非同期処理対応
    - ファイルアップロード/ダウンロード
    - **ローカル開発**: Node.jsサーバー
