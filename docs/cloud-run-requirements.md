@@ -1,8 +1,8 @@
-# CheerCast Cloud Run 要件定義書
+# PersonalCast Cloud Run 要件定義書
 
 ## 概要
 
-CheerCastをGoogle Cloud Run上でWebアプリケーションとして動作させるための要件を定義します。現在のCLIベースの機能をWebブラウザから利用可能にすることで、より多くのユーザーが簡単にアクセスできるようになります。
+PersonalCastをGoogle Cloud Run上でWebアプリケーションとして動作させるための要件を定義します。現在のCLIベースの機能をWebブラウザから利用可能にすることで、より多くのユーザーが簡単にアクセスできるようになります。
 
 ## システム構成
 
@@ -12,7 +12,7 @@ CheerCastをGoogle Cloud Run上でWebアプリケーションとして動作さ�
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
 │                 │     │                 │     │                 │
 │  Web Browser    │────▶│  Cloud Run      │────▶│  Gemini API     │
-│                 │     │  (CheerCast)    │     │                 │
+│                 │     │  (PersonalCast) │     │                 │
 └─────────────────┘     └────────┬────────┘     └─────────────────┘
                                  │
                                  ▼
@@ -27,9 +27,9 @@ CheerCastをGoogle Cloud Run上でWebアプリケーションとして動作さ�
 
 1. **Web フロントエンド**
    - React/Vue.js/Next.js によるSPA
-   - メモ入力フォーム
-   - 生成進捗表示
-   - 音声プレイヤー
+   - 活動記録入力フォーム
+   - 分析進捗表示
+   - レポートプレイヤー
 
 2. **バックエンドAPI (Cloud Run)**
    - REST API エンドポイント
@@ -48,10 +48,10 @@ CheerCastをGoogle Cloud Run上でWebアプリケーションとして動作さ�
 - **匿名利用**: 初期バージョンでは認証なしで利用可能
 - **将来拡張**: Google認証、使用制限管理
 
-### 2. メモ入力
+### 2. 活動記録入力
 
 #### 入力方法
-- **テキストエリア**: 直接入力
+- **テキストエリア**: 構造化された形式で入力
 - **ファイルアップロード**: txt, md, json, csv対応
 - **テンプレート**: 入力例の提供
 
@@ -67,8 +67,8 @@ interface GenerationOptions {
   // プログラムタイプ
   programType: 'daily' | 'weekly';
   
-  // 褒めスタイル
-  praiseStyle: 'gentle' | 'energetic';
+  // 分析スタイル
+  analysisStyle: 'analytical' | 'comprehensive';
   
   // 番組の長さ（分）
   duration: number; // 1-10
@@ -76,16 +76,16 @@ interface GenerationOptions {
   // 音声速度
   speed?: number; // 0.5-2.0
   
-  // カスタムラジオ番組名
-  radioShowName?: string;
+  // カスタムニュース番組名
+  newsShowName?: string;
 }
 ```
 
-### 4. 音声生成プロセス
+### 4. 分析レポート生成プロセス
 
 #### 非同期処理フロー
-1. **ジョブ作成**: 生成リクエスト受付、ジョブID発行
-2. **台本生成完了通知**: 台本が完成したら即座に表示可能に
+1. **ジョブ作成**: 分析リクエスト受付、ジョブID発行
+2. **統計分析完了通知**: データ分析が完成したら即座に表示可能に
 3. **進捗通知**: WebSocket or Server-Sent Events
 4. **音声生成完了**: 完了通知とダウンロードURL
 
@@ -94,8 +94,9 @@ interface GenerationOptions {
 enum GenerationStatus {
   QUEUED = 'queued',
   PARSING = 'parsing',
+  ANALYZING_DATA = 'analyzing_data',
   GENERATING_SCRIPT = 'generating_script',
-  SCRIPT_READY = 'script_ready',  // 台本閲覧可能
+  SCRIPT_READY = 'script_ready',  // レポート閲覧可能
   SYNTHESIZING_VOICE = 'synthesizing_voice',
   MIXING_AUDIO = 'mixing_audio',
   COMPLETED = 'completed',
@@ -105,24 +106,27 @@ enum GenerationStatus {
 
 ### 5. 結果表示・ダウンロード
 
-#### 台本プレビュー（音声生成前）
-- **即座に表示**: 台本生成完了後すぐに閲覧可能
-- **対話形式表示**: キャラクターアイコン付きチャット風UI
-- **共有機能**: 台本のみの共有URL
+#### 統計レポート表示（音声生成前）
+- **即座に表示**: データ分析完了後すぐに閲覧可能
+- **統計ダッシュボード**: グラフやチャートで可視化
+- **カテゴリー別分析**: 活動の分布表示
+- **共有機能**: レポートのみの共有URL
 
 #### 音声再生画面
-- **同期再生**: 音声と台本が同期してスクロール
-- **ハイライト表示**: 現在再生中の対話をハイライト
-- **インタラクティブ**: 台本クリックで該当箇所から再生
-- **タイムスタンプ**: 各対話の開始時刻表示
+- **同期再生**: 音声とレポートが同期してスクロール
+- **ハイライト表示**: 現在再生中のセクションをハイライト
+- **インタラクティブ**: レポートクリックで該当箇所から再生
+- **タイムスタンプ**: 各セクションの開始時刻表示
 
 ```typescript
 interface PlaybackView {
   audioUrl: string;
-  script: {
-    dialogues: Array<{
+  report: {
+    sections: Array<{
+      title: string;
       speaker: string;
       text: string;
+      statistics?: StatisticsData;
       startTime: number;  // 秒
       endTime: number;    // 秒
     }>;
@@ -132,50 +136,49 @@ interface PlaybackView {
 }
 ```
 
-### 6. 待ち時間エンターテイメント
+### 6. データビジュアライゼーション
 
-#### ミニゲーム仕様
-生成待ち時間（通常30-60秒）を楽しく過ごすための簡単なゲーム。
+#### 統計ダッシュボード仕様
+分析完了後、音声生成を待たずに統計情報を表示。
 
-**ゲーム案：「褒めワードキャッチャー」**
+**表示項目**:
+- **活動サマリー**: 総活動数、カテゴリー別分布
+- **時系列グラフ**: 日別・時間別の活動パターン
+- **キーワードクラウド**: 頻出キーワードの視覚化
+- **進捗トラッキング**: 継続的な取り組みの可視化
+
 ```typescript
-interface MiniGame {
-  type: 'word-catcher';
-  config: {
-    words: string[];  // 褒め言葉リスト
-    speed: number;    // 落下速度
-    duration: number; // ゲーム時間
+interface StatisticsData {
+  totalActivities: number;
+  categoryDistribution: {
+    work: number;
+    learning: number;
+    health: number;
+    personal: number;
+    other: number;
   };
-  score: number;
-  highScore: number;
+  topKeywords: Array<{ word: string; count: number }>;
+  continuityMetrics: {
+    streaks: Array<{ activity: string; days: number }>;
+    completionRate: number;
+  };
 }
 ```
-
-**ゲーム内容**:
-- 画面上から褒め言葉が降ってくる
-- 「すごい！」「えらい！」「がんばった！」などをクリック/タップ
-- 集めた褒め言葉の数がスコアに
-- 生成完了時に「あなたも〇〇個の褒め言葉ゲット！」と表示
-
-**その他のゲーム候補**:
-- **励ましルーレット**: スロットマシン風の応援メッセージ
-- **元気メーター**: 連打で元気ゲージを貯める
-- **褒めパズル**: 簡単な3マッチパズル
 
 ## API仕様
 
 ### エンドポイント設計
 
-#### 1. 生成開始
+#### 1. 分析開始
 ```http
-POST /api/generate
+POST /api/analyze
 Content-Type: application/json
 
 {
-  "memo": "今日はTypeScriptの勉強を2時間した...",
+  "activityLog": "【業務活動】\n- TypeScript移行タスク2件完了...",
   "options": {
     "programType": "daily",
-    "praiseStyle": "gentle",
+    "analysisStyle": "analytical",
     "duration": 5
   }
 }
@@ -188,12 +191,12 @@ Response:
 }
 ```
 
-#### 2. ファイルアップロード生成
+#### 2. ファイルアップロード分析
 ```http
-POST /api/generate/upload
+POST /api/analyze/upload
 Content-Type: multipart/form-data
 
-memo: (file)
+activityLog: (file)
 options: {"programType": "daily", ...}
 
 Response:
@@ -213,40 +216,75 @@ Response:
   "status": "synthesizing_voice",
   "progress": 60,
   "message": "音声を生成中...",
-  "scriptAvailable": true,  // 台本が閲覧可能
+  "statisticsAvailable": true,  // 統計が閲覧可能
+  "scriptAvailable": true,       // レポートが閲覧可能
   "estimatedTimeRemaining": 30
 }
 ```
 
-#### 4. 台本取得（音声生成前）
+#### 4. 統計データ取得（音声生成前）
 ```http
-GET /api/jobs/{jobId}/script
+GET /api/jobs/{jobId}/statistics
+
+Response:
+{
+  "jobId": "...",
+  "status": "analyzing_data",
+  "statistics": {
+    "totalActivities": 12,
+    "categoryDistribution": {
+      "work": 5,
+      "learning": 3,
+      "health": 2,
+      "personal": 2,
+      "other": 0
+    },
+    "topKeywords": [
+      { "word": "TypeScript", "count": 4 },
+      { "word": "プロジェクト", "count": 3 },
+      { "word": "完了", "count": 3 }
+    ],
+    "continuityMetrics": {
+      "streaks": [
+        { "activity": "朝のランニング", "days": 5 }
+      ],
+      "completionRate": 100
+    }
+  }
+}
+```
+
+#### 5. レポート取得（音声生成前）
+```http
+GET /api/jobs/{jobId}/report
 
 Response:
 {
   "jobId": "...",
   "status": "script_ready",
-  "script": {
-    "title": "2025年1月20日のCheerCast",
-    "dialogues": [
+  "report": {
+    "title": "2025年1月22日のToday's You",
+    "sections": [
       {
-        "id": "d1",
+        "id": "s1",
+        "type": "opening",
         "speaker": "あかり",
-        "text": "みなさんこんにちは〜！",
-        "emotion": "cheerful"
+        "text": "こんにちは。Today's Youの時間です。",
+        "emotion": "professional"
       },
       {
-        "id": "d2", 
+        "id": "s2",
+        "type": "statistics",
         "speaker": "けんた",
-        "text": "今日もお疲れ様でした！",
-        "emotion": "gentle"
+        "text": "本日は総計12件の活動が記録されました。",
+        "statistics": { ... }
       }
     ]
   }
 }
 ```
 
-#### 5. 最終結果取得（音声付き）
+#### 6. 最終結果取得（音声付き）
 ```http
 GET /api/jobs/{jobId}/result
 
@@ -255,48 +293,30 @@ Response:
   "jobId": "...",
   "status": "completed",
   "audioUrl": "https://storage.googleapis.com/...",
-  "script": {
-    "title": "2025年1月20日のCheerCast",
-    "dialogues": [
+  "report": {
+    "title": "2025年1月22日のToday's You",
+    "sections": [
       {
-        "id": "d1",
+        "id": "s1",
+        "type": "opening",
         "speaker": "あかり",
-        "text": "みなさんこんにちは〜！",
+        "text": "こんにちは。Today's Youの時間です。",
         "startTime": 0.0,
-        "endTime": 2.5,
-        "emotion": "cheerful"
+        "endTime": 2.5
       },
       {
-        "id": "d2",
-        "speaker": "けんた", 
-        "text": "今日もお疲れ様でした！",
+        "id": "s2",
+        "type": "statistics",
+        "speaker": "けんた",
+        "text": "本日は総計12件の活動が記録されました。",
         "startTime": 2.5,
-        "endTime": 4.8,
-        "emotion": "gentle"
+        "endTime": 5.8,
+        "statistics": { ... }
       }
     ]
   },
   "duration": 300,  // 総再生時間（秒）
-  "expiresAt": "2025-01-21T12:00:00Z"
-}
-```
-
-#### 6. ミニゲーム状態管理
-```http
-POST /api/games/score
-
-Request:
-{
-  "jobId": "...",
-  "gameType": "word-catcher",
-  "score": 42
-}
-
-Response:
-{
-  "newHighScore": true,
-  "globalRank": 123,
-  "encouragementMessage": "42個も褒め言葉をゲット！すごい！"
+  "expiresAt": "2025-01-23T12:00:00Z"
 }
 ```
 
@@ -305,7 +325,7 @@ Response:
 ### 1. パフォーマンス
 
 - **レスポンスタイム**: API応答 < 500ms
-- **生成時間**: 5分番組 < 60秒
+- **分析時間**: 5分番組 < 60秒
 - **同時処理**: 10リクエスト/インスタンス
 
 ### 2. スケーラビリティ
@@ -340,7 +360,7 @@ Response:
 - **Cloud Monitoring**: 
   - API レスポンスタイム
   - エラー率
-  - 生成成功率
+  - 分析成功率
 - **Error Reporting**: 例外の自動収集
 
 ## 実装フェーズ
@@ -353,7 +373,7 @@ Response:
    - 結果表示
 
 2. **同期API**
-   - 単純な生成エンドポイント
+   - 単純な分析エンドポイント
    - タイムアウト対応
 
 3. **Cloud Run デプロイ**
@@ -374,18 +394,18 @@ Response:
 
 1. **リッチUI**
    - プログレスバー
-   - 台本プレビュー（音声生成前）
+   - 統計ダッシュボード（音声生成前）
    - 同期再生ビュー
 
-2. **共有機能**
+2. **データビジュアライゼーション**
+   - グラフ・チャート実装
+   - キーワードクラウド
+   - 時系列分析
+
+3. **共有機能**
    - 短縮URL
    - SNS共有
-   - 台本のみ共有
-
-3. **ミニゲーム実装**
-   - 褒めワードキャッチャー
-   - スコアランキング
-   - 待ち時間表示
+   - レポートのみ共有
 
 ### Phase 4: スケール対応 (1週間)
 
@@ -415,8 +435,8 @@ Response:
 
 ```mermaid
 graph LR
-    A[入力画面] --> B[生成中画面<br/>ミニゲーム]
-    B --> C[台本プレビュー]
+    A[入力画面] --> B[分析中画面]
+    B --> C[統計ダッシュボード]
     C --> D[音声生成中]
     D --> E[再生画面]
     
@@ -427,26 +447,26 @@ graph LR
 ### 2. 各画面の詳細
 
 #### 入力画面
-- **メインエリア**: 大きなテキストエリア
-- **サンプル表示**: 入力例をグレーアウトで表示
+- **メインエリア**: 構造化されたテキストエリア
+- **テンプレート表示**: 活動記録の形式例
 - **オプション**: アコーディオンで折りたたみ
-- **生成ボタン**: 大きく目立つデザイン
+- **分析ボタン**: プロフェッショナルなデザイン
 
-#### 生成中画面（ミニゲーム）
+#### 分析中画面
 - **上部**: 進捗バーと状態メッセージ
-- **中央**: ミニゲーム画面
-- **下部**: 「台本ができたら見る」ボタン（台本完成後に有効化）
+- **中央**: 分析ステータス表示
+- **下部**: 「統計を見る」ボタン（分析完成後に有効化）
 
-#### 台本プレビュー画面
-- **チャット風UI**: LINEのような対話表示
-- **キャラアイコン**: あかり👩、けんた👨
-- **吹き出し**: 左右交互に表示
-- **下部**: 「音声ができるまで待つ」「入力に戻る」ボタン
+#### 統計ダッシュボード画面
+- **グラフエリア**: 円グラフ、棒グラフで活動分布表示
+- **キーワード**: ワードクラウド形式
+- **継続指標**: ストリークカウンター
+- **下部**: 「レポートを聴く」「入力に戻る」ボタン
 
 #### 再生画面
 - **上部**: オーディオプレイヤー
-- **中央**: 台本表示エリア（自動スクロール）
-- **ハイライト**: 現在再生中の対話を強調
+- **中央**: レポート表示エリア（自動スクロール）
+- **サイドバー**: 統計サマリー（デスクトップのみ）
 - **コントロール**: 
   - 再生/一時停止
   - 10秒戻る/進む
@@ -456,52 +476,59 @@ graph LR
 
 #### モバイル（〜768px）
 - 縦長レイアウト
-- ミニゲームは全画面表示
-- 台本は1カラム表示
+- 統計は縦スクロール
+- レポートは1カラム表示
 
 #### タブレット（768px〜1024px）
 - 2カラムレイアウト可能
-- 台本と音声コントロールを並列表示
+- 統計とレポートを並列表示
 
 #### デスクトップ（1024px〜）
 - 3カラムレイアウト
-- 入力・台本・結果を同時表示可能
+- 入力・統計・レポートを同時表示可能
 
 ### 4. アニメーション仕様
 
 #### 遷移アニメーション
 - **ページ遷移**: スライドイン/アウト
-- **要素出現**: フェードイン + 軽いバウンス
+- **要素出現**: フェードイン
 - **進捗更新**: スムーズなプログレスバー
 
-#### ミニゲームアニメーション
-- **褒め言葉**: 上から降ってくる（パララックス効果）
-- **キャッチ時**: 星のエフェクト + スコアポップアップ
-- **ゲーム終了**: 紙吹雪エフェクト
+#### データビジュアライゼーション
+- **グラフ描画**: 段階的なアニメーション
+- **数値カウントアップ**: 0から実数値へ
+- **キーワード出現**: フェードイン効果
 
 #### 再生画面アニメーション
-- **対話切り替え**: スムーズスクロール
-- **ハイライト**: グロー効果
+- **セクション切り替え**: スムーズスクロール
+- **ハイライト**: 背景色の変化
 - **一時停止/再生**: アイコンモーフィング
 
 ### 5. カラーパレット
 
 ```css
 :root {
-  /* メインカラー */
-  --primary-red: #ff6b6b;
-  --primary-yellow: #feca57;
-  --primary-blue: #48dbfb;
+  /* メインカラー（プロフェッショナル） */
+  --primary-blue: #1a365d;
+  --primary-light-blue: #2b6cb0;
+  --accent-blue: #90cdf4;
   
-  /* キャラクターカラー */
-  --akari-color: #ff9ff3;
-  --kenta-color: #54a0ff;
+  /* キャスターカラー */
+  --akari-color: #4299e1;
+  --kenta-color: #2d3748;
   
   /* UI カラー */
-  --bg-main: #fff5f5;
+  --bg-main: #f7fafc;
   --bg-white: #ffffff;
-  --text-primary: #2d3748;
-  --text-secondary: #718096;
+  --text-primary: #1a202c;
+  --text-secondary: #4a5568;
+  
+  /* データビジュアライゼーション */
+  --chart-1: #3182ce;
+  --chart-2: #63b3ed;
+  --chart-3: #90cdf4;
+  --chart-4: #bee3f8;
+  --chart-5: #e0e7ff;
   
   /* ステータスカラー */
   --success: #48bb78;
@@ -536,7 +563,7 @@ CMD ["npm", "run", "start:web"]
 ```yaml
 env_variables:
   GEMINI_API_KEY: ${GEMINI_API_KEY}
-  GCS_BUCKET: cheercast-audio-files
+  GCS_BUCKET: personalcast-audio-files
   NODE_ENV: production
   PORT: 8080
 ```
@@ -548,7 +575,7 @@ env_variables:
    - 一時ファイル → メモリバッファ or Cloud Storage
 
 2. **設定管理**
-   - cheercast.config.json → 環境変数
+   - personalcast.config.json → 環境変数
    - デフォルト設定のハードコード
 
 3. **エラーハンドリング**
@@ -559,59 +586,68 @@ env_variables:
    - 同期的な生成 → Promise/async-await
    - 長時間処理 → ジョブキュー
 
-5. **台本タイミング情報**
-   - 各対話の開始/終了時刻を計算
+5. **レポートタイミング情報**
+   - 各セクションの開始/終了時刻を計算
    - 音声ファイルのメタデータ抽出
    - タイムスタンプとの同期
 
 ### 4. フロントエンド実装考慮点
 
-#### 台本同期再生の実装
+#### レポート同期再生の実装
 ```typescript
-// 音声再生と台本同期のサンプルコード
+// 音声再生とレポート同期のサンプルコード
 class SyncedPlayback {
   private audio: HTMLAudioElement;
-  private dialogues: DialogueWithTiming[];
+  private sections: SectionWithTiming[];
   
-  constructor(audioUrl: string, dialogues: DialogueWithTiming[]) {
+  constructor(audioUrl: string, sections: SectionWithTiming[]) {
     this.audio = new Audio(audioUrl);
-    this.dialogues = dialogues;
+    this.sections = sections;
     
-    // タイムアップデートイベントで現在の対話をハイライト
+    // タイムアップデートイベントで現在のセクションをハイライト
     this.audio.addEventListener('timeupdate', () => {
       const currentTime = this.audio.currentTime;
-      const currentDialogue = this.findCurrentDialogue(currentTime);
-      this.highlightDialogue(currentDialogue);
+      const currentSection = this.findCurrentSection(currentTime);
+      this.highlightSection(currentSection);
     });
   }
   
-  private findCurrentDialogue(time: number): DialogueWithTiming | null {
-    return this.dialogues.find(d => 
-      time >= d.startTime && time < d.endTime
+  private findCurrentSection(time: number): SectionWithTiming | null {
+    return this.sections.find(s => 
+      time >= s.startTime && time < s.endTime
     ) || null;
   }
 }
 ```
 
-#### ミニゲームの実装
+#### データビジュアライゼーションの実装
 ```typescript
-// 褒めワードキャッチャーのサンプル
-class WordCatcherGame {
-  private words = [
-    'すごい！', 'えらい！', 'がんばった！', 
-    'ステキ！', 'さすが！', 'ナイス！'
-  ];
-  private score = 0;
-  private gameLoop: number;
+// 統計ダッシュボードのサンプル
+class StatisticsDashboard {
+  private chartLibrary: ChartJS; // or D3.js
   
-  start() {
-    this.gameLoop = requestAnimationFrame(() => this.update());
+  renderCategoryDistribution(data: CategoryDistribution) {
+    const ctx = document.getElementById('categoryChart');
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['業務', '学習', '健康', '個人', 'その他'],
+        datasets: [{
+          data: Object.values(data),
+          backgroundColor: [
+            '#3182ce',
+            '#63b3ed',
+            '#90cdf4',
+            '#bee3f8',
+            '#e0e7ff'
+          ]
+        }]
+      }
+    });
   }
   
-  private spawnWord() {
-    const word = this.words[Math.floor(Math.random() * this.words.length)];
-    const x = Math.random() * (window.innerWidth - 100);
-    return new FallingWord(word, x, -50);
+  renderKeywordCloud(keywords: Keyword[]) {
+    // D3.js word cloud implementation
   }
 }
 ```
@@ -638,7 +674,7 @@ class WordCatcherGame {
 
 ## まとめ
 
-CheerCastのCloud Run化により、以下のメリットが期待できます：
+PersonalCastのCloud Run化により、以下のメリットが期待できます：
 
 1. **アクセシビリティ向上**: CLIの知識不要
 2. **スケーラビリティ**: 自動スケーリング
@@ -648,17 +684,17 @@ CheerCastのCloud Run化により、以下のメリットが期待できます�
 ### 特徴的なUX機能
 
 1. **段階的な結果表示**
-   - 台本が完成したら即座に閲覧可能
-   - 音声生成を待たずに内容を確認できる
+   - 統計分析が完成したら即座に閲覧可能
+   - 音声生成を待たずにデータを確認できる
 
-2. **インタラクティブな再生体験**
-   - 音声と台本が同期してスクロール
-   - 現在の発言がハイライト表示
+2. **データドリブンな体験**
+   - 活動の可視化による気づきの提供
+   - 継続的な取り組みのトラッキング
+   - 客観的なデータに基づく分析
+
+3. **インタラクティブな再生体験**
+   - 音声とレポートが同期してスクロール
+   - 現在のセクションがハイライト表示
    - クリックで任意の位置から再生
 
-3. **待ち時間のエンターテイメント**
-   - ミニゲームで楽しく待機
-   - 褒め言葉を集めてモチベーションアップ
-   - スコアランキングでゲーミフィケーション
-
-これらの機能により、単なる音声生成ツールから、楽しく使える励ましサービスへと進化します。初期実装はシンプルに始め、段階的に機能を追加していくアプローチを推奨します。
+これらの機能により、単なる音声生成ツールから、個人の活動を客観的に分析・可視化するプロフェッショナルなサービスへと進化します。初期実装はシンプルに始め、段階的に機能を追加していくアプローチを推奨します。
