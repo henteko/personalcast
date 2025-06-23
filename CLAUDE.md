@@ -4,7 +4,7 @@
 
 ## 🎯 プロジェクト概要
 
-PersonalCastは、日々のメモから2人のAIパーソナリティがユーザーの活動を分析・紹介するニュース番組を自動生成するCLIツールです。
+PersonalCastは、日々のメモから2人のAIパーソナリティがユーザーの活動を分析・紹介するニュース番組を自動生成するツールです。CLIツールとWebアプリケーションの両方で利用可能です。
 
 ### 主な特徴
 - 📝 様々な形式のメモファイルに対応（.txt, .md, .json, .csv）
@@ -12,6 +12,7 @@ PersonalCastは、日々のメモから2人のAIパーソナリティがユー�
 - 🎙️ Gemini 2.5 Flash Preview TTSによる高品質な音声合成
 - 🎵 BGM追加機能（自動ダッキング、フェード処理対応）
 - ⚡ シンプルなCLIインターフェース
+- 🌐 Webアプリケーション対応（ブラウザから利用可能）
 - 🏗️ モノレポ構造による保守性の高い設計
 - 🔄 自動リトライ機能付きのAPI呼び出し
 - ✅ 入力検証とエラーハンドリング
@@ -37,16 +38,33 @@ personalcast/
 │   │   │   └── PersonalCast.ts # メインオーケストレーター
 │   │   ├── dist/            # ビルド済みファイル
 │   │   └── package.json
-│   └── cli/                 # CLIアプリケーション (personalcast)
-│       ├── src/
-│       │   ├── commands/    # CLIコマンド実装
-│       │   │   ├── generate.ts  # メイン生成コマンド
-│       │   │   ├── preview.ts   # プレビューコマンド
-│       │   │   ├── init.ts      # 初期設定コマンド
-│       │   │   └── add-bgm.ts   # BGM追加コマンド
-│       │   ├── PersonalCast.ts  # CLI固有のPersonalCast
-│       │   └── index.ts     # メインCLIエントリーポイント
-│       ├── dist/            # ビルド済みファイル
+│   ├── cli/                 # CLIアプリケーション (personalcast)
+│   │   ├── src/
+│   │   │   ├── commands/    # CLIコマンド実装
+│   │   │   │   ├── generate.ts  # メイン生成コマンド
+│   │   │   │   ├── preview.ts   # プレビューコマンド
+│   │   │   │   ├── init.ts      # 初期設定コマンド
+│   │   │   │   └── add-bgm.ts   # BGM追加コマンド
+│   │   │   ├── PersonalCast.ts  # CLI固有のPersonalCast
+│   │   │   └── index.ts     # メインCLIエントリーポイント
+│   │   ├── dist/            # ビルド済みファイル
+│   │   └── package.json
+│   └── web/                 # Webアプリケーション (@personalcast/web)
+│       ├── app/             # Next.js App Router
+│       │   ├── api/         # APIルート
+│       │   │   ├── analyze/ # 分析API
+│       │   │   ├── jobs/    # ジョブ管理API
+│       │   │   └── files/   # ファイルサービング
+│       │   ├── jobs/[jobId]/ # ジョブ詳細ページ
+│       │   └── page.tsx     # ホームページ
+│       ├── components/      # Reactコンポーネント
+│       │   ├── forms/       # フォームコンポーネント
+│       │   └── analysis/    # 分析関連コンポーネント
+│       ├── lib/             # ライブラリコード
+│       │   ├── storage/     # ストレージアダプター
+│       │   └── types/       # TypeScript型定義
+│       ├── public/          # 静的ファイル
+│       │   └── audio/       # BGMファイル
 │       └── package.json
 ├── docs/                    # ドキュメント
 ├── .github/                 # GitHub Actions ワークフロー
@@ -85,9 +103,16 @@ personalcast/
 - フェードイン/アウト処理
 - BGMの自動ループ
 
+#### 7. **Webアプリケーション**
+- Next.js 15によるモダンなWebインターフェース
+- APIルートによる非同期処理
+- リアルタイム進捗表示
+- ブラウザ内音声再生
+- レスポンシブデザイン
+
 ## 🔧 設定システム
 
-### 設定ファイル (personalcast.config.json)
+### CLIの設定ファイル (personalcast.config.json)
 ```json
 {
   "radioShowName": "PersonalCast",
@@ -119,6 +144,8 @@ personalcast/
 ```
 
 ### 環境変数
+
+#### CLI環境変数
 ```bash
 # 必須
 GEMINI_API_KEY=your-gemini-api-key
@@ -127,6 +154,24 @@ GEMINI_API_KEY=your-gemini-api-key
 DEFAULT_DURATION=10
 DEFAULT_STYLE=analytical
 GEMINI_MODEL=gemini-2.5-flash  # モデルのオーバーライド
+```
+
+#### Web環境変数 (.env.local)
+```bash
+# 必須
+GEMINI_API_KEY=your-gemini-api-key
+
+# ストレージ設定
+USE_CLOUD_STORAGE=false  # ローカル開発時
+USE_CLOUD_TASKS=false    # ローカル開発時
+
+# ローカルディレクトリ
+LOCAL_TEMP_DIR=./temp
+LOCAL_OUTPUT_DIR=./output
+
+# API設定
+API_RATE_LIMIT=10
+API_DAILY_LIMIT=100
 ```
 
 ## 🛠️ 開発環境
@@ -142,8 +187,14 @@ npm run build:core
 # CLIパッケージのみビルド
 npm run build:cli
 
+# Webパッケージのみビルド
+npm run build:web
+
 # CLIの開発モード
 npm run dev:cli
+
+# Webの開発モード（http://localhost:3000）
+npm run dev:web
 
 # 全パッケージのテスト
 npm run test
@@ -173,6 +224,7 @@ npm run typecheck
 4. **音声処理**
    - FFmpegで音声を結合
    - 音量を正規化
+   - BGMを自動追加（Webアプリケーションの場合）
    - MP3形式でエクスポート
 
 ## 📋 開発ガイドライン
@@ -235,18 +287,20 @@ PersonalCastはモノレポ構造を採用しており、以下の利点があ�
 ### パッケージ構成
 - **@personalcast/core**: 共有ライブラリ（Node.js環境）
 - **personalcast**: CLIアプリケーション（coreライブラリを使用）
+- **@personalcast/web**: Webアプリケーション（Next.js + coreライブラリ）
 
 ### 将来の拡張
-- **Webアプリケーション**: バックエンドでcoreライブラリを使用するAPI
 - **デスクトップアプリ**: ElectronでCLIをGUIラップ
 - **モバイルアプリ**: React Native + API経由でcoreライブラリ使用
+- **クラウド対応**: Google Cloud Run でのホスティング
 
 ## 📊 今後の拡張可能性
 
-- Web版の開発（Next.js + API Routes）
 - 追加の音声合成エンジン対応
 - カスタムパーソナリティの追加
 - 多言語対応
 - バッチ処理機能
 - リアルタイム音声ストリーミング
 - デスクトップ・モバイル版の開発
+- Google Cloud Run でのホスティング対応
+- ユーザー認証とデータ管理機能
