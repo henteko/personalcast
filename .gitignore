@@ -70,3 +70,4 @@ dist/
 !docs/sample.mp3
 
 !packages/web/public/audio/bgm.mp3
+!packages/core/assets/break.mp3

@@ -84,6 +84,29 @@ export class AudioMixer {
     }
   }
 
+  /**
+   * @deprecated Use break.mp3 from assets instead
+   */
+  async generateSilence(durationSeconds: number): Promise<AudioBuffer> {
+    // Load break.mp3 from assets instead of generating silence
+    const breakPath = path.join(__dirname, '../../assets/break.mp3');
+    
+    try {
+      const breakData = await fs.readFile(breakPath);
+      const actualDuration = await this.ffmpegService.getDuration(breakPath).catch(() => durationSeconds);
+      
+      return {
+        data: breakData,
+        duration: actualDuration,
+        format: 'mp3'
+      };
+    } catch (error) {
+      throw new Error(
+        `Failed to load break.mp3: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
+
   private async cleanupFile(filePath: string): Promise<void> {
     try {
       await fs.unlink(filePath);

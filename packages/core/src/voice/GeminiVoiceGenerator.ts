@@ -1,6 +1,10 @@
 import { GeminiAPITTSClient } from '../services/gemini-api/GeminiAPITTSClient';
 import { config } from '../config';
 import { RadioScript, DialogueLine, VoiceConfig, AudioBuffer } from '../types';
+import { FFmpegService } from '../services/ffmpeg/FFmpegService';
+import * as path from 'path';
+import * as os from 'os';
+import * as fs from 'fs/promises';
 
 export interface VoiceGeneratorConfig {
   apiKey?: string;
@@ -8,6 +12,8 @@ export interface VoiceGeneratorConfig {
 
 export class GeminiVoiceGenerator {
   private ttsClient: GeminiAPITTSClient;
+  private ffmpegService: FFmpegService;
+  private tempDir: string;
   private defaultVoiceConfig: VoiceConfig = {
     languageCode: 'ja-JP',
     speakingRate: 0.95, // Slightly slower for news broadcast clarity
@@ -19,6 +25,8 @@ export class GeminiVoiceGenerator {
     this.ttsClient = new GeminiAPITTSClient({
       apiKey: generatorConfig?.apiKey ?? process.env.GEMINI_API_KEY,
     });
+    this.tempDir = path.join(os.tmpdir(), 'personalcast');
+    this.ffmpegService = new FFmpegService(this.tempDir);
   }
 
   async generateSpeech(script: RadioScript, options?: { speed?: number }): Promise<AudioBuffer[]> {
@@ -26,6 +34,11 @@ export class GeminiVoiceGenerator {
 
     if (options?.speed) {
       voiceConfig.speakingRate = options.speed;
+    }
+
+    // If script has segments (opening, main, ending), generate audio for each segment with silence between
+    if (script.segments && script.segments.length > 0) {
+      return this.generateSegmentedAudio(script, voiceConfig);
     }
 
     // Try to use multi-speaker generation for better conversation flow
@@ -146,5 +159,68 @@ export class GeminiVoiceGenerator {
     const baseRate = 300; // characters per minute
     const adjustedRate = baseRate * speakingRate;
     return (charCount / adjustedRate) * 60; // Convert to seconds
+  }
+
+  private async generateSegmentedAudio(
+    script: RadioScript,
+    voiceConfig: VoiceConfig,
+  ): Promise<AudioBuffer[]> {
+    const audioBuffers: AudioBuffer[] = [];
+
+    if (!script.segments) {
+      return [];
+    }
+
+    for (let i = 0; i < script.segments.length; i++) {
+      const segment = script.segments[i];
+      
+      // Create a temporary script for this segment
+      const segmentScript: RadioScript = {
+        title: script.title,
+        date: script.date,
+        duration: script.duration,
+        dialogues: segment.dialogues,
+        // segments is intentionally undefined to avoid recursion
+      };
+
+      try {
+        // Try multi-speaker synthesis for this segment
+        const segmentAudio = await this.generateMultiSpeakerAudio(segmentScript, voiceConfig);
+        audioBuffers.push(segmentAudio);
+      } catch (error) {
+        console.warn(`Segment ${segment.type} multi-speaker failed, using individual:`, error);
+        // Fallback to individual synthesis for this segment
+        const individualAudios = await this.generateIndividualAudios(segmentScript, voiceConfig);
+        audioBuffers.push(...individualAudios);
+      }
+
+      // Add break.mp3 between segments (except after the last segment)
+      if (i < script.segments.length - 1) {
+        const breakBuffer = await this.generateSilenceBuffer();
+        audioBuffers.push(breakBuffer);
+      }
+    }
+
+    return audioBuffers;
+  }
+
+  private async generateSilenceBuffer(): Promise<AudioBuffer> {
+    // Use break.mp3 from assets
+    const breakPath = path.join(__dirname, '../../assets/break.mp3');
+    
+    try {
+      const breakData = await fs.readFile(breakPath);
+      
+      // Get actual duration of break.mp3
+      const duration = await this.ffmpegService.getDuration(breakPath).catch(() => 2.0);
+      
+      return {
+        data: breakData,
+        duration: duration,
+        format: 'mp3',
+      };
+    } catch (error) {
+      throw new Error(`Failed to load break.mp3: ${error}`);
+    }
   }
 }
