@@ -14,8 +14,7 @@
     "./config": "./dist/config/index.js"
   },
   "scripts": {
-    "build": "tsc && npm run copy-assets",
-    "copy-assets": "cp -r assets dist/",
+    "build": "tsc",
     "dev": "tsc --watch",
     "test": "jest",
     "test:coverage": "jest --coverage",

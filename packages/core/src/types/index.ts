@@ -103,7 +103,6 @@ export interface VoiceConfig {
 export interface AudioBuffer {
   data: Buffer;
   duration: number;
-  format?: 'pcm' | 'mp3'; // Optional format indicator, defaults to 'pcm' for backward compatibility
 }
 
 export interface GenerationOptions {

@@ -88,39 +88,31 @@ export class FFmpegService {
     const timestamp = Date.now();
 
     for (let i = 0; i < audioBuffers.length; i++) {
-      const audioBuffer = audioBuffers[i];
+      const pcmPath = path.join(this.tempDir, `pcm_${timestamp}_${i}.raw`);
       const mp3Path = path.join(this.tempDir, `audio_${timestamp}_${i}.mp3`);
+      await fs.writeFile(pcmPath, audioBuffers[i].data);
 
-      if (audioBuffer.format === 'mp3') {
-        // If already MP3, just save it directly
-        await fs.writeFile(mp3Path, audioBuffer.data);
-      } else {
-        // Convert PCM to MP3
-        const pcmPath = path.join(this.tempDir, `pcm_${timestamp}_${i}.raw`);
-        await fs.writeFile(pcmPath, audioBuffer.data);
+      // Convert PCM to MP3
+      await new Promise<void>((resolve, reject) => {
+        ffmpeg()
+          .input(pcmPath)
+          .inputOptions([
+            '-f',
+            's16le', // 16-bit signed little-endian PCM
+            '-ar',
+            '24000', // Sample rate 24kHz
+            '-ac',
+            '1', // Mono audio
+          ])
+          .audioCodec('libmp3lame')
+          .audioBitrate('192k')
+          .output(mp3Path)
+          .on('end', () => resolve())
+          .on('error', (err: Error) => reject(err))
+          .run();
+      });
 
-        await new Promise<void>((resolve, reject) => {
-          ffmpeg()
-            .input(pcmPath)
-            .inputOptions([
-              '-f',
-              's16le', // 16-bit signed little-endian PCM
-              '-ar',
-              '24000', // Sample rate 24kHz
-              '-ac',
-              '1', // Mono audio
-            ])
-            .audioCodec('libmp3lame')
-            .audioBitrate('192k')
-            .output(mp3Path)
-            .on('end', () => resolve())
-            .on('error', (err: Error) => reject(err))
-            .run();
-        });
-
-        await this.cleanupTempFiles([pcmPath]);
-      }
-
+      await this.cleanupTempFiles([pcmPath]);
       tempFiles.push(mp3Path);
     }
 
@@ -236,48 +228,6 @@ export class FFmpegService {
         }
       });
     });
-  }
-
-  async generateSilence(outputPath: string, durationSeconds: number): Promise<void> {
-    await this.ensureTempDir();
-    
-    // Create a temporary silent PCM file
-    const tempPcmPath = outputPath.replace('.mp3', '_silence.pcm');
-    const sampleRate = 44100;
-    const channels = 2;
-    const bytesPerSample = 2; // 16-bit
-    const totalSamples = Math.floor(sampleRate * durationSeconds * channels);
-    
-    try {
-      // Create a buffer filled with zeros (silence)
-      const silenceBuffer = Buffer.alloc(totalSamples * bytesPerSample, 0);
-      await fs.writeFile(tempPcmPath, silenceBuffer);
-      
-      // Convert PCM to MP3
-      await new Promise<void>((resolve, reject) => {
-        ffmpeg()
-          .input(tempPcmPath)
-          .inputOptions([
-            '-f', 's16le',
-            '-ar', String(sampleRate),
-            '-ac', String(channels)
-          ])
-          .audioCodec('libmp3lame')
-          .audioBitrate('128k')
-          .output(outputPath)
-          .outputOptions(['-y'])
-          .on('end', async () => {
-            // Clean up temp file
-            await this.cleanupTempFiles([tempPcmPath]);
-            resolve();
-          })
-          .on('error', (err: Error) => reject(err))
-          .run();
-      });
-    } catch (error) {
-      await this.cleanupTempFiles([tempPcmPath]);
-      throw new Error(`Failed to generate silence: ${String(error)}`);
-    }
   }
 
   async addBackgroundMusic(
