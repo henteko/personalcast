@@ -1,7 +1,6 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { SampleSection } from '@/components/landing/SampleSection';
 
 export default function HomePage() {
