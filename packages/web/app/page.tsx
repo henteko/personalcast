@@ -189,6 +189,59 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* CLI Section */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-8 md:p-12 text-white">
+              <div className="flex flex-col md:flex-row items-center gap-8">
+                <div className="flex-1">
+                  <h2 className="text-3xl font-bold mb-4">
+                    ローカル環境でも使える
+                  </h2>
+                  <p className="text-lg mb-6 opacity-90">
+                    PersonalCastはCLIツールとしても提供されています。
+                    <br />
+                    お使いのPC上で、ニュース番組を生成できます。
+                  </p>
+                  <div className="space-y-3 mb-6">
+                    <div className="flex items-center gap-3">
+                      <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>カスタマイズ可能な設定</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>バッチ処理・自動化に対応</span>
+                    </div>
+                  </div>
+                  <a
+                    href="https://henteko.github.io/personalcast/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-white text-gray-900 font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <span>CLIツールを試す</span>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                </div>
+                <div className="flex-shrink-0">
+                  <div className="bg-black/20 rounded-lg p-4 font-mono text-sm">
+                    <div className="text-gray-300 mb-2">$ personalcast init</div>
+                    <div className="text-green-400 mb-2">$ personalcast generate -i activity.txt</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-r from-primary-blue to-primary-light-blue text-white">
         <div className="container mx-auto px-4 text-center">
