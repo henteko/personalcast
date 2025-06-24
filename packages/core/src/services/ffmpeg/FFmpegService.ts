@@ -18,16 +18,6 @@ export interface NormalizeOptions {
   peakNormalization?: boolean;
 }
 
-export interface BgmMixOptions {
-  output?: string;
-  bgmVolume?: number;
-  ducking?: number;
-  fadeIn?: number;
-  fadeOut?: number;
-  intro?: number;
-  outro?: number;
-}
-
 export class FFmpegService {
   private tempDir: string;
 
@@ -233,17 +223,15 @@ export class FFmpegService {
   async addBackgroundMusic(
     audioPath: string,
     bgmPath: string,
-    options: BgmMixOptions,
+    outputPath?: string,
   ): Promise<string> {
-    const {
-      output = audioPath.replace('.mp3', '_with_bgm.mp3'),
-      bgmVolume = 0.3,
-      ducking = 0.15,
-      fadeIn = 3,
-      fadeOut = 3,
-      intro = 3,
-      outro = 5,
-    } = options;
+    const output = outputPath ?? audioPath.replace('.mp3', '_with_bgm.mp3');
+
+    const bgmVolume = 0.3;
+    const ducking = 0.15;
+    const fadeIn = 3;
+    const intro = 3;
+    const outro = 5;
 
     try {
       // Get audio duration

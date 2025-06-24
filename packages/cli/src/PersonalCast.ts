@@ -9,12 +9,6 @@ export interface CLIGenerationOptions extends CoreGenerationOptions {
   voiceSpeed?: number;
   bgm?: {
     path: string;
-    volume?: number;
-    ducking?: number;
-    fadeIn?: number;
-    fadeOut?: number;
-    intro?: number;
-    outro?: number;
   };
 }
 
@@ -55,14 +49,7 @@ export class PersonalCast extends CorePersonalCast {
       // Add BGM if specified
       if (options.bgm) {
         console.log('📋 BGMを追加中...');
-        await this.addBGMToAudio(options.outputPath, options.bgm.path, {
-          bgmVolume: options.bgm.volume,
-          ducking: options.bgm.ducking,
-          fadeIn: options.bgm.fadeIn,
-          fadeOut: options.bgm.fadeOut,
-          intro: options.bgm.intro,
-          outro: options.bgm.outro,
-        });
+        await this.addBackgroundMusic(options.outputPath, options.bgm.path);
         console.log('📋 BGMの追加が完了しました');
       }
       
@@ -101,31 +88,16 @@ export class PersonalCast extends CorePersonalCast {
   async addBackgroundMusicWithCLI(
     audioPath: string,
     bgmPath: string,
-    options: {
-      output?: string;
-      bgmVolume?: number;
-      ducking?: number;
-      fadeIn?: number;
-      fadeOut?: number;
-      intro?: number;
-      outro?: number;
-    }
+    outputPath?: string,
   ) {
     console.log('🎵 BGMを追加します...');
-    
-    const cliProgressHandler = (message: string) => {
-      console.log(`📋 ${message}`);
-    };
 
     try {
-      const outputPath = await this.addBackgroundMusic(audioPath, bgmPath, {
-        ...options,
-        onProgress: cliProgressHandler
-      });
+      const output = await this.addBackgroundMusic(audioPath, bgmPath, outputPath);
       
       console.log('✅ BGMの追加が完了しました！');
-      console.log(`📁 出力ファイル: ${outputPath}`);
-      return outputPath;
+      console.log(`📁 出力ファイル: ${output}`);
+      return output;
     } catch (error) {
       console.error('❌ BGM追加に失敗しました:', error instanceof Error ? error.message : String(error));
       throw error;

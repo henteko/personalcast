@@ -18,12 +18,6 @@ interface GenerateOptions {
   voiceSpeed?: number;
   preview?: boolean;
   bgm?: string;
-  bgmVolume?: number;
-  ducking?: number;
-  fadeIn?: number;
-  fadeOut?: number;
-  intro?: number;
-  outro?: number;
 }
 
 export async function executeGenerateCommand(options: GenerateOptions): Promise<void> {
@@ -82,12 +76,6 @@ export async function executeGenerateCommand(options: GenerateOptions): Promise<
     if (options.bgm) {
       generationOptions.bgm = {
         path: options.bgm,
-        volume: options.bgmVolume,
-        ducking: options.ducking,
-        fadeIn: options.fadeIn,
-        fadeOut: options.fadeOut,
-        intro: options.intro,
-        outro: options.outro,
       };
     }
 

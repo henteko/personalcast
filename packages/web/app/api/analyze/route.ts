@@ -185,15 +185,7 @@ export async function processJob(jobId: string) {
     });
     
     const bgmPath = path.resolve(process.cwd(), 'public/audio/bgm.mp3');
-    
-    await personalCast.addBGMToAudio(finalOutputPath, bgmPath, {
-      bgmVolume: 0.3,
-      ducking: 0.15,
-      fadeIn: 3,
-      fadeOut: 3,
-      intro: 5,
-      outro: 5
-    });
+    await personalCast.addBackgroundMusic(finalOutputPath, bgmPath);
     
     // Clean up temp files
     await tempStorage.delete(tempMemoPath);

@@ -85,82 +85,26 @@ export class PersonalCast {
   }
 
   /**
-   * Add BGM to audio file
-   */
-  async addBGMToAudio(
-    audioPath: string,
-    bgmPath: string,
-    options: {
-      output?: string;
-      bgmVolume?: number;
-      ducking?: number;
-      fadeIn?: number;
-      fadeOut?: number;
-      intro?: number;
-      outro?: number;
-    }
-  ): Promise<string> {
-    const tempOutput = (options.output || audioPath).replace('.mp3', '_temp_bgm.mp3');
-    
-    await this.ffmpegService.addBackgroundMusic(audioPath, bgmPath, {
-      output: tempOutput,
-      bgmVolume: options.bgmVolume,
-      ducking: options.ducking,
-      fadeIn: options.fadeIn,
-      fadeOut: options.fadeOut,
-      intro: options.intro,
-      outro: options.outro,
-    });
-
-    // If overwriting original, rename temp file
-    if (!options.output || options.output === audioPath) {
-      await fs.rename(tempOutput, audioPath);
-      return audioPath;
-    }
-
-    return tempOutput;
-  }
-
-  /**
    * Add background music to existing audio file
    */
   async addBackgroundMusic(
     audioPath: string,
     bgmPath: string,
-    options: {
-      output?: string;
-      bgmVolume?: number;
-      ducking?: number;
-      fadeIn?: number;
-      fadeOut?: number;
-      intro?: number;
-      outro?: number;
-      onProgress?: (message: string) => void;
-    },
+    outputPath?: string,
   ): Promise<string> {
     try {
-      options.onProgress?.('BGMを処理中...');
-
       // Create temporary output file to avoid FFmpeg in-place editing error
-      const tempOutput = (options.output ?? audioPath).replace('.mp3', '_temp_bgm.mp3');
+      const tempOutput = (outputPath ?? audioPath).replace('.mp3', '_temp_bgm.mp3');
 
-      const outputPath = await this.ffmpegService.addBackgroundMusic(audioPath, bgmPath, {
-        output: tempOutput,
-        bgmVolume: options.bgmVolume,
-        ducking: options.ducking,
-        fadeIn: options.fadeIn,
-        fadeOut: options.fadeOut,
-        intro: options.intro,
-        outro: options.outro,
-      });
+      const output = await this.ffmpegService.addBackgroundMusic(audioPath, bgmPath, tempOutput);
 
       // If we're overwriting the original file, rename the temp file
-      if (!options.output || options.output === audioPath) {
+      if (!outputPath || outputPath === audioPath) {
         await fs.rename(tempOutput, audioPath);
         return audioPath;
       }
 
-      return outputPath;
+      return output;
     } catch (error) {
       throw error;
     }

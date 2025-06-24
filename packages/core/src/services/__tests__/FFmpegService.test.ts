@@ -94,15 +94,7 @@ describe('FFmpegService', () => {
   describe('addBackgroundMusic', () => {
     const audioPath = '/path/to/audio.mp3';
     const bgmPath = '/path/to/bgm.mp3';
-    const defaultOptions = {
-      output: '/path/to/audio_with_bgm.mp3',
-      bgmVolume: 0.3,
-      ducking: 0.15,
-      fadeIn: 3,
-      fadeOut: 3,
-      intro: 3,
-      outro: 2,
-    };
+    const outputPath = '/path/to/audio_with_bgm.mp3';
 
     beforeEach(() => {
       // Mock getDuration to return 60 seconds
@@ -117,7 +109,7 @@ describe('FFmpegService', () => {
     });
 
     it('should successfully add background music with default options', async () => {
-      const result = await service.addBackgroundMusic(audioPath, bgmPath, {});
+      const result = await service.addBackgroundMusic(audioPath, bgmPath);
 
       expect(result).toBe('/path/to/audio_with_bgm.mp3');
       expect(mockFfmpeg.input).toHaveBeenCalledWith(audioPath);
@@ -134,17 +126,7 @@ describe('FFmpegService', () => {
     });
 
     it('should use custom options when provided', async () => {
-      const customOptions = {
-        output: '/custom/output.mp3',
-        bgmVolume: 0.5,
-        ducking: 0.2,
-        fadeIn: 5,
-        fadeOut: 4,
-        intro: 4,
-        outro: 3,
-      };
-
-      const result = await service.addBackgroundMusic(audioPath, bgmPath, customOptions);
+      const result = await service.addBackgroundMusic(audioPath, bgmPath, '/custom/output.mp3');
 
       expect(result).toBe('/custom/output.mp3');
       expect(mockFfmpeg.output).toHaveBeenCalledWith('/custom/output.mp3');
@@ -152,13 +134,13 @@ describe('FFmpegService', () => {
       // Check that complex filter includes custom values
       const calls = mockFfmpeg.complexFilter.mock.calls as Array<[string]>;
       const filterCall = calls[0][0];
-      expect(filterCall).toContain('volume=0.5');
-      expect(filterCall).toContain('afade=t=in:st=0:d=5');
-      expect(filterCall).toContain('afade=t=out:st=0:d=3');
+      expect(filterCall).toContain('volume=0.3');
+      expect(filterCall).toContain('afade=t=in:st=0:d=3');
+      expect(filterCall).toContain('afade=t=out:st=63:d=5');
     });
 
     it('should create proper filter graph for BGM mixing', async () => {
-      await service.addBackgroundMusic(audioPath, bgmPath, defaultOptions);
+      await service.addBackgroundMusic(audioPath, bgmPath, outputPath);
 
       const calls = mockFfmpeg.complexFilter.mock.calls as Array<[string]>;
       const filterGraph = calls[0][0];
@@ -168,7 +150,7 @@ describe('FFmpegService', () => {
       expect(filterGraph).toContain('[bgm_loop]asplit=3[bgm1][bgm2][bgm3]');
       expect(filterGraph).toContain('[bgm1]atrim=0:3,volume=0.3,afade=t=in:st=0:d=3[bgm_intro]');
       expect(filterGraph).toContain('[bgm2]atrim=3:63,volume=0.15[bgm_main]');
-      expect(filterGraph).toContain('[bgm3]atrim=63:65,volume=0.3,afade=t=out:st=0:d=2[bgm_outro]');
+      expect(filterGraph).toContain('[bgm3]atrim=63:68,volume=0.3,afade=t=out:st=63:d=5[bgm_outro]');
       expect(filterGraph).toContain('[0:a]adelay=3000[voice_delayed]');
       expect(filterGraph).toContain(
         '[voice_delayed][bgm_final]amix=inputs=2:duration=longest:dropout_transition=2[mixed]',
@@ -186,7 +168,7 @@ describe('FFmpegService', () => {
         },
       );
 
-      await expect(service.addBackgroundMusic(audioPath, bgmPath, {})).rejects.toThrow(
+      await expect(service.addBackgroundMusic(audioPath, bgmPath)).rejects.toThrow(
         'Failed to add background music: Error: Error: Failed to get duration',
       );
     });
@@ -201,7 +183,7 @@ describe('FFmpegService', () => {
         },
       );
 
-      await expect(service.addBackgroundMusic(audioPath, bgmPath, {})).rejects.toThrow(
+      await expect(service.addBackgroundMusic(audioPath, bgmPath)).rejects.toThrow(
         'Failed to add background music: Error: FFmpeg processing failed',
       );
     });
@@ -220,37 +202,11 @@ describe('FFmpegService', () => {
         },
       );
 
-      await service.addBackgroundMusic(audioPath, bgmPath, {});
+      await service.addBackgroundMusic(audioPath, bgmPath);
 
       expect(processStdoutSpy).toHaveBeenCalledWith('\r進捗: 50%');
 
       processStdoutSpy.mockRestore();
-    });
-
-    it('should calculate correct timeline for BGM sections', async () => {
-      // Mock 90 second audio
-      mockFfprobe.mockImplementation(
-        (
-          _path: string,
-          callback: (err: Error | null, data?: { format: { duration?: number } }) => void,
-        ) => {
-          callback(null, { format: { duration: 90 } });
-        },
-      );
-
-      await service.addBackgroundMusic(audioPath, bgmPath, {
-        intro: 5,
-        outro: 3,
-      });
-
-      const calls = mockFfmpeg.complexFilter.mock.calls as Array<[string]>;
-      const filterGraph = calls[0][0];
-
-      // Total duration should be 90 + 5 + 3 = 98 seconds
-      expect(filterGraph).toContain('[bgm1]atrim=0:5'); // Intro: 0-5 seconds
-      expect(filterGraph).toContain('[bgm2]atrim=5:95'); // Main: 5-95 seconds
-      expect(filterGraph).toContain('[bgm3]atrim=95:98'); // Outro: 95-98 seconds
-      expect(filterGraph).toContain('[0:a]adelay=5000'); // Voice delay: 5 seconds
     });
   });
 
