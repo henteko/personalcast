@@ -263,7 +263,7 @@ export default function HomePage() {
       <footer className="py-8 bg-gray-900 text-white">
         <div className="container mx-auto px-4 text-center">
           <p className="text-sm opacity-70">
-            © 2025 PersonalCast. All rights reserved.
+            © 2025 henteko. All rights reserved.
           </p>
         </div>
       </footer>
