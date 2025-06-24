@@ -101,7 +101,7 @@ export default function JobPage({ params }: { params: Promise<{ jobId: string }>
           </div>
           <button
             onClick={() => router.push('/')}
-            className="mt-4 px-6 py-2 bg-primary-blue text-white rounded-lg hover:bg-primary-light-blue transition-colors"
+            className="mt-4 px-6 py-2 bg-primary-blue text-white rounded-lg hover:bg-primary-light-blue transition-colors cursor-pointer"
           >
             トップに戻る
           </button>
@@ -202,8 +202,8 @@ export default function JobPage({ params }: { params: Promise<{ jobId: string }>
               </a>
             )}
             <button
-              onClick={() => router.push('/')}
-              className="px-6 py-3 bg-gray-200 text-text-primary rounded-lg hover:bg-gray-300 transition-colors"
+              onClick={() => router.push('/generate')}
+              className="px-6 py-3 bg-gray-200 text-text-primary rounded-lg hover:bg-gray-300 transition-colors cursor-pointer"
             >
               新しい分析を開始
             </button>

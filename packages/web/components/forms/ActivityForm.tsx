@@ -85,7 +85,7 @@ export function ActivityForm({ onSubmit, isLoading = false }: ActivityFormProps)
         <button
           type="button"
           onClick={() => setShowAdvanced(!showAdvanced)}
-          className="text-sm text-primary-blue hover:text-primary-light-blue flex items-center gap-2"
+          className="text-sm text-primary-blue hover:text-primary-light-blue flex items-center gap-2 cursor-pointer"
         >
           詳細オプション
           <svg
@@ -166,7 +166,7 @@ export function ActivityForm({ onSubmit, isLoading = false }: ActivityFormProps)
       <button
         type="submit"
         disabled={isLoading || !activityLog.trim()}
-        className="w-full py-3 px-4 bg-primary-blue text-white font-medium rounded-lg hover:bg-primary-light-blue disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full py-3 px-4 bg-primary-blue text-white font-medium rounded-lg hover:bg-primary-light-blue disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
       >
         {isLoading ? '処理中...' : '分析を開始'}
       </button>
