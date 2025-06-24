@@ -57,12 +57,12 @@ class Config {
       personalities: {
         host1: {
           name: 'あかり',
-          voiceName: 'Kore',
+          voiceName: 'Zephyr',
           character: '冷静で分析的なメインキャスター',
         },
         host2: {
           name: 'けんた',
-          voiceName: 'Puck',
+          voiceName: 'Charon',
           character: '洞察力のあるコメンテーター',
         },
       },

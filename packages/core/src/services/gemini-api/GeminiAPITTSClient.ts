@@ -94,7 +94,7 @@ export class GeminiAPITTSClient {
       // Create conversation text with speaker names
       let conversationText = dialogues.map((d) => `${d.speakerName}: ${d.text}`).join('\n\n');
       conversationText =
-        'Please read aloud the following in a podcast interview style:\n\n' + conversationText;
+        'Read aloud in a warm, welcoming tone:\n\n' + conversationText;
 
       // Create speaker voice configs for multi-speaker synthesis
       const speakerVoiceConfigs = dialogues.map((d) => ({
