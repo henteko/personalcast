@@ -3,12 +3,14 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { JobResponse, GenerationStatus, ScriptData, ResultResponse } from '@/lib/types/api';
-import { ProgressDisplay } from '@/components/analysis/ProgressDisplay';
+import { ConvexProgressDisplay } from '@/components/analysis/ConvexProgressDisplay';
 import { ScriptDisplay } from '@/components/analysis/ScriptDisplay';
 import { AudioPlayer } from '@/components/analysis/AudioPlayer';
+import type { Id } from '@/convex/_generated/dataModel';
 
 export default function JobPage({ params }: { params: Promise<{ jobId: string }> }) {
   const router = useRouter();
+  const [jobId, setJobId] = useState<string | null>(null);
   const [jobData, setJobData] = useState<JobResponse | null>(null);
   const [script, setScript] = useState<ScriptData | null>(null);
   const [result, setResult] = useState<ResultResponse | null>(null);
@@ -18,7 +20,9 @@ export default function JobPage({ params }: { params: Promise<{ jobId: string }>
     let timeoutId: NodeJS.Timeout;
     
     const loadJobId = async () => {
-      const { jobId } = await params;
+      const { jobId: paramJobId } = await params;
+      setJobId(paramJobId);
+      const jobId = paramJobId;
       
       const loadScript = async (id: string) => {
         try {
@@ -127,25 +131,28 @@ export default function JobPage({ params }: { params: Promise<{ jobId: string }>
 
         <main className="max-w-4xl mx-auto">
           {/* Progress Display */}
-          {jobData.status !== GenerationStatus.COMPLETED && (
+          {jobId && jobData.status !== GenerationStatus.COMPLETED && (
             <div className="mb-8">
-              <ProgressDisplay
-                status={jobData.status}
-                progress={jobData.progress || 0}
-                message={jobData.message || ''}
+              <ConvexProgressDisplay
+                jobId={jobId as Id<"jobs">}
               />
             </div>
           )}
 
-          {/* Script Display */}
-          {script && (
+          {/* Script Display - プレビューとして表示（台本生成後〜完了前） */}
+          {script && jobData.status !== GenerationStatus.COMPLETED && (
             <div className="mb-8">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <p className="text-sm text-blue-700">
+                  <span className="font-semibold">プレビュー:</span> 台本が生成されました。音声生成が完了するまでお待ちください。
+                </p>
+              </div>
               <ScriptDisplay script={script} />
             </div>
           )}
 
-          {/* Audio Player */}
-          {result && (
+          {/* Audio Player - 完了後のみ表示 */}
+          {jobData.status === GenerationStatus.COMPLETED && result && (
             <div className="mb-8">
               <AudioPlayer
                 audioUrl={result.audioUrl}

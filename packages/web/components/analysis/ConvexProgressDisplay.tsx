@@ -3,34 +3,11 @@
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { GenerationStatus } from '@/lib/types/api';
+import { JOB_STATUS, STATUS_ORDER, STATUS_LABELS, JobStatus } from '@/lib/constants/jobStatus';
 
 interface ConvexProgressDisplayProps {
   jobId: Id<"jobs">;
 }
-
-const STATUS_LABELS: Record<string, string> = {
-  'queued': 'キューに追加されました',
-  'parsing': 'メモを解析中',
-  'analyzing_memo': '活動を分析中',
-  'generating_script': '台本を生成中',
-  'script_ready': '台本が完成しました',
-  'synthesizing_voice': '音声を生成中',
-  'mixing_audio': '音声を処理中',
-  'completed': '完了',
-  'failed': 'エラー',
-};
-
-const STATUS_ORDER = [
-  'queued',
-  'parsing',
-  'analyzing_memo',
-  'generating_script',
-  'script_ready',
-  'synthesizing_voice',
-  'mixing_audio',
-  'completed'
-];
 
 export function ConvexProgressDisplay({ jobId }: ConvexProgressDisplayProps) {
   // Convexが自動的にリアルタイム更新を処理
@@ -83,22 +60,26 @@ export function ConvexProgressDisplay({ jobId }: ConvexProgressDisplayProps) {
         {/* Status Steps */}
         <div className="mt-6 space-y-3">
           {STATUS_ORDER.map((status, index) => {
-            const isActive = status === job.status;
-            const currentIndex = STATUS_ORDER.indexOf(job.status);
-            const isCompleted = index < currentIndex;
+            const jobStatus = job.status as JobStatus;
+            const isActive = status === jobStatus;
+            const currentIndex = STATUS_ORDER.indexOf(jobStatus);
+            const isCompleted = currentIndex !== -1 && index < currentIndex;
+            const isFailed = job.status === JOB_STATUS.FAILED;
             
             return (
               <div key={status} className="flex items-center gap-3">
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-                    isCompleted
+                    isFailed
+                      ? 'bg-gray-200 text-gray-400'
+                      : isCompleted
                       ? 'bg-success text-white'
                       : isActive
                       ? 'bg-primary-blue text-white'
                       : 'bg-gray-200 text-gray-400'
                   }`}
                 >
-                  {isCompleted ? (
+                  {isCompleted && !isFailed ? (
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
@@ -108,7 +89,11 @@ export function ConvexProgressDisplay({ jobId }: ConvexProgressDisplayProps) {
                 </div>
                 <span
                   className={`text-sm ${
-                    isActive ? 'text-text-primary font-medium' : 'text-text-secondary'
+                    isFailed
+                      ? 'text-gray-400'
+                      : isActive 
+                      ? 'text-text-primary font-medium' 
+                      : 'text-text-secondary'
                   }`}
                 >
                   {STATUS_LABELS[status]}

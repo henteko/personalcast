@@ -7,6 +7,7 @@ import { createConvexJob, updateJobStatus, saveScriptData, recordJobError, compl
 import type { Id } from '@/convex/_generated/dataModel';
 import { ConvexStorageAdapter } from '@/lib/storage/ConvexStorageAdapter';
 import { promises as fs } from 'fs';
+import { JOB_STATUS, STATUS_PROGRESS } from '@/lib/constants/jobStatus';
 
 // Initialize temp directory path
 const tempDir = process.env.LOCAL_TEMP_DIR || './temp';
@@ -109,12 +110,12 @@ export async function processJob(localJobId: string, convexJobId: Id<"jobs">) {
     // Update status to parsing
     jobManager.updateJob(localJobId, {
       status: GenerationStatus.PARSING,
-      progress: 10,
+      progress: STATUS_PROGRESS[JOB_STATUS.PARSING],
       message: 'メモを解析中...'
     });
     
     // Update Convex
-    await updateJobStatus(convexJobId, 'parsing', 10, 'メモを解析中...');
+    await updateJobStatus(convexJobId, JOB_STATUS.PARSING, STATUS_PROGRESS[JOB_STATUS.PARSING], 'メモを解析中...');
 
     // Initialize PersonalCast with API key
     if (!process.env.GEMINI_API_KEY) {
@@ -137,20 +138,20 @@ export async function processJob(localJobId: string, convexJobId: Id<"jobs">) {
     // Update status to analyzing
     jobManager.updateJob(localJobId, {
       status: GenerationStatus.ANALYZING_MEMO,
-      progress: 30,
+      progress: STATUS_PROGRESS[JOB_STATUS.ANALYZING_MEMO],
       message: '活動を分析中...'
     });
     
-    await updateJobStatus(convexJobId, 'analyzing_memo', 30, '活動を分析中...');
+    await updateJobStatus(convexJobId, JOB_STATUS.ANALYZING_MEMO, STATUS_PROGRESS[JOB_STATUS.ANALYZING_MEMO], '活動を分析中...');
 
     // Generate script
     jobManager.updateJob(localJobId, {
       status: GenerationStatus.GENERATING_SCRIPT,
-      progress: 50,
+      progress: STATUS_PROGRESS[JOB_STATUS.GENERATING_SCRIPT],
       message: '台本を生成中...'
     });
     
-    await updateJobStatus(convexJobId, 'generating_script', 50, '台本を生成中...');
+    await updateJobStatus(convexJobId, JOB_STATUS.GENERATING_SCRIPT, STATUS_PROGRESS[JOB_STATUS.GENERATING_SCRIPT], '台本を生成中...');
 
     const script = await personalCast.generateScriptFromMemo(parsedMemo, {
       style: job.options.analysisStyle,
@@ -169,7 +170,7 @@ export async function processJob(localJobId: string, convexJobId: Id<"jobs">) {
     jobManager.updateJob(localJobId, {
       status: GenerationStatus.SCRIPT_READY,
       script: scriptData,
-      progress: 60,
+      progress: STATUS_PROGRESS[JOB_STATUS.SCRIPT_READY],
       message: '台本が完成しました',
       scriptAvailable: true
     });
@@ -184,11 +185,11 @@ export async function processJob(localJobId: string, convexJobId: Id<"jobs">) {
     // Generate voice
     jobManager.updateJob(localJobId, {
       status: GenerationStatus.SYNTHESIZING_VOICE,
-      progress: 70,
+      progress: STATUS_PROGRESS[JOB_STATUS.SYNTHESIZING_VOICE],
       message: '音声を生成中...'
     });
     
-    await updateJobStatus(convexJobId, 'synthesizing_voice', 70, '音声を生成中...');
+    await updateJobStatus(convexJobId, JOB_STATUS.SYNTHESIZING_VOICE, STATUS_PROGRESS[JOB_STATUS.SYNTHESIZING_VOICE], '音声を生成中...');
 
     const audioBuffers = await personalCast.generateSpeechFromScript(script, {
       speed: job.options.speed
@@ -197,11 +198,11 @@ export async function processJob(localJobId: string, convexJobId: Id<"jobs">) {
     // Mix audio
     jobManager.updateJob(localJobId, {
       status: GenerationStatus.MIXING_AUDIO,
-      progress: 90,
+      progress: STATUS_PROGRESS[JOB_STATUS.MIXING_AUDIO],
       message: '音声を処理中...'
     });
     
-    await updateJobStatus(convexJobId, 'mixing_audio', 90, '音声を処理中...');
+    await updateJobStatus(convexJobId, JOB_STATUS.MIXING_AUDIO, STATUS_PROGRESS[JOB_STATUS.MIXING_AUDIO], '音声を処理中...');
 
     // Combine audio buffers
     const combinedAudio = await personalCast.combineAudioBuffers(audioBuffers);
@@ -224,7 +225,7 @@ export async function processJob(localJobId: string, convexJobId: Id<"jobs">) {
       message: 'BGMを追加中...'
     });
     
-    await updateJobStatus(convexJobId, 'mixing_audio', 95, 'BGMを追加中...');
+    await updateJobStatus(convexJobId, JOB_STATUS.MIXING_AUDIO, 95, 'BGMを追加中...');
     
     const bgmPath = path.resolve(process.cwd(), 'public/audio/bgm.mp3');
     await personalCast.addBackgroundMusic(finalOutputPath, bgmPath);
@@ -277,7 +278,7 @@ export async function processJob(localJobId: string, convexJobId: Id<"jobs">) {
     jobManager.updateJob(localJobId, {
       status: GenerationStatus.COMPLETED,
       audioPath: finalOutputFileName,
-      progress: 100,
+      progress: STATUS_PROGRESS[JOB_STATUS.COMPLETED],
       message: '生成が完了しました'
     });
     
@@ -297,5 +298,8 @@ export async function processJob(localJobId: string, convexJobId: Id<"jobs">) {
       message: error instanceof Error ? error.message : 'Unknown error',
       code: 'PROCESSING_ERROR'
     });
+    
+    // Update status to failed
+    await updateJobStatus(convexJobId, JOB_STATUS.FAILED, STATUS_PROGRESS[JOB_STATUS.FAILED], 'エラーが発生しました');
   }
 }
