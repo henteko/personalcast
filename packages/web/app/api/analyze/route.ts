@@ -148,10 +148,10 @@ export async function processJob(localJobId: string, convexJobId: Id<"jobs">) {
     jobManager.updateJob(localJobId, {
       status: GenerationStatus.GENERATING_SCRIPT,
       progress: STATUS_PROGRESS[JOB_STATUS.GENERATING_SCRIPT],
-      message: '台本を生成中...'
+      message: 'スクリプトを生成中...'
     });
     
-    await updateJobStatus(convexJobId, JOB_STATUS.GENERATING_SCRIPT, STATUS_PROGRESS[JOB_STATUS.GENERATING_SCRIPT], '台本を生成中...');
+    await updateJobStatus(convexJobId, JOB_STATUS.GENERATING_SCRIPT, STATUS_PROGRESS[JOB_STATUS.GENERATING_SCRIPT], 'スクリプトを生成中...');
 
     const script = await personalCast.generateScriptFromMemo(parsedMemo, {
       style: job.options.analysisStyle,
@@ -171,7 +171,7 @@ export async function processJob(localJobId: string, convexJobId: Id<"jobs">) {
       status: GenerationStatus.SCRIPT_READY,
       script: scriptData,
       progress: STATUS_PROGRESS[JOB_STATUS.SCRIPT_READY],
-      message: '台本が完成しました',
+      message: 'スクリプトが完成しました',
       scriptAvailable: true
     });
     

@@ -81,7 +81,7 @@ export default function Home() {
                 <div className="text-3xl mb-4">🤖</div>
                 <h4 className="font-semibold mb-2">2. AI分析</h4>
                 <p className="text-sm text-text-secondary">
-                  AIがあなたの活動を分析し、ニュース台本を生成します
+                  AIがあなたの活動を分析し、ニューススクリプトを生成します
                 </p>
               </div>
               <div className="bg-white rounded-lg p-6 shadow">

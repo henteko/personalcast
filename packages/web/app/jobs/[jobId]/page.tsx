@@ -121,12 +121,37 @@ export default function JobPage({ params }: { params: Promise<{ jobId: string }>
     );
   }
 
+  // ステータスに応じたヘッダーメッセージを決定
+  const getHeaderMessage = () => {
+    if (!jobData) return '読み込み中...';
+    
+    switch (jobData.status) {
+      case GenerationStatus.QUEUED:
+        return '処理を準備しています';
+      case GenerationStatus.PARSING:
+      case GenerationStatus.ANALYZING_MEMO:
+        return 'メモを分析しています';
+      case GenerationStatus.GENERATING_SCRIPT:
+      case GenerationStatus.SCRIPT_READY:
+        return 'スクリプトを作成しています';
+      case GenerationStatus.SYNTHESIZING_VOICE:
+      case GenerationStatus.MIXING_AUDIO:
+        return '音声を生成しています';
+      case GenerationStatus.COMPLETED:
+        return '生成が完了しました';
+      case GenerationStatus.FAILED:
+        return 'エラーが発生しました';
+      default:
+        return '処理中...';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-bg-main">
       <div className="container mx-auto px-4 py-8">
         <header className="text-center mb-8">
           <h1 className="text-3xl font-bold text-primary-blue mb-2">PersonalCast</h1>
-          <p className="text-text-secondary">分析レポート生成中</p>
+          <p className="text-text-secondary">{getHeaderMessage()}</p>
         </header>
 
         <main className="max-w-4xl mx-auto">
@@ -139,12 +164,12 @@ export default function JobPage({ params }: { params: Promise<{ jobId: string }>
             </div>
           )}
 
-          {/* Script Display - プレビューとして表示（台本生成後〜完了前） */}
+          {/* Script Display - プレビューとして表示（スクリプト生成後〜完了前） */}
           {script && jobData.status !== GenerationStatus.COMPLETED && (
             <div className="mb-8">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                 <p className="text-sm text-blue-700">
-                  <span className="font-semibold">プレビュー:</span> 台本が生成されました。音声生成が完了するまでお待ちください。
+                  <span className="font-semibold">プレビュー:</span> スクリプトが生成されました。音声生成が完了するまでお待ちください。
                 </p>
               </div>
               <ScriptDisplay script={script} />

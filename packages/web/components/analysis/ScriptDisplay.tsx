@@ -9,7 +9,7 @@ export function ScriptDisplay({ script }: ScriptDisplayProps) {
     <div className="bg-white rounded-xl shadow-lg p-8">
       <div className="border-b border-gray-200 pb-4 mb-6">
         <h2 className="text-2xl font-bold text-primary-blue">{script.title}</h2>
-        <p className="text-sm text-text-secondary mt-1">生成された台本</p>
+        <p className="text-sm text-text-secondary mt-1">生成されたスクリプト</p>
       </div>
 
       <div className="space-y-6 max-h-96 overflow-y-auto pr-2">
@@ -42,7 +42,7 @@ export function ScriptDisplay({ script }: ScriptDisplayProps) {
 
       <div className="mt-6 pt-4 border-t border-gray-200 text-center">
         <p className="text-xs text-text-secondary">
-          この台本は音声生成が完了すると、音声と同期して表示されます
+          このスクリプトは音声生成が完了すると、音声と同期して表示されます
         </p>
       </div>
     </div>

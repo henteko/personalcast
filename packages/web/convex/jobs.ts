@@ -48,7 +48,7 @@ export const getJob = query({
   },
 });
 
-// 台本データの保存
+// スクリプトデータの保存
 export const saveScriptData = mutation({
   args: {
     jobId: v.id("jobs"),

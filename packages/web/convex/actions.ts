@@ -12,7 +12,7 @@ export const processAudioGeneration = action({
       // ジョブ情報を取得
       const job = await ctx.runQuery(api.jobs.getJob, { jobId: args.jobId });
       if (!job || !job.scriptData) {
-        throw new Error("ジョブまたは台本データが見つかりません");
+        throw new Error("ジョブまたはスクリプトデータが見つかりません");
       }
       
       // 音声合成の進捗更新
