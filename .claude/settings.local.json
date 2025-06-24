@@ -21,7 +21,9 @@
       "Bash(find:*)",
       "Bash(mv:*)",
       "Bash(npx create-next-app:*)",
-      "Bash(npm ls:*)"
+      "Bash(npm ls:*)",
+      "Bash(npx convex:*)",
+      "Bash(curl:*)"
     ],
     "deny": []
   }

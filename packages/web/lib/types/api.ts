@@ -35,6 +35,7 @@ export interface ScriptSection {
 export interface ScriptData {
   title: string;
   sections: ScriptSection[];
+  summary?: string;
 }
 
 export interface ScriptResponse {

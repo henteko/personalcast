@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GenerationStatus, ResultResponse } from '@/lib/types/api';
 import { jobManager } from '@/lib/storage/JobManager';
-import { LocalStorageAdapter } from '@/lib/storage/LocalStorageAdapter';
-
-const outputStorage = new LocalStorageAdapter(process.env.LOCAL_OUTPUT_DIR || './output');
+import { getConvexClient } from '@/lib/convex/client';
+import { api } from '@/convex/_generated/api';
+import type { Id } from '@/convex/_generated/dataModel';
 
 export async function GET(
   request: NextRequest,
@@ -11,6 +11,31 @@ export async function GET(
 ) {
   try {
     const { jobId } = await params;
+    
+    // Try Convex first
+    try {
+      const client = getConvexClient();
+      const convexJob = await client.query(api.jobs.getJob, { 
+        jobId: jobId as Id<"jobs"> 
+      });
+      
+      if (convexJob && convexJob.status === 'completed' && convexJob.audioUrl) {
+        // Return Convex-based result
+        const response: ResultResponse = {
+          jobId: convexJob._id,
+          status: GenerationStatus.COMPLETED,
+          audioUrl: convexJob.audioUrl,
+          script: convexJob.scriptData || { sections: [], title: '', summary: '' },
+          duration: 600, // Default 10 minutes
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+        };
+        return NextResponse.json(response);
+      }
+    } catch (convexError) {
+      console.log('Falling back to local job manager');
+    }
+    
+    // Fall back to local job manager
     const job = jobManager.getJob(jobId);
 
     if (!job) {
@@ -34,23 +59,12 @@ export async function GET(
       );
     }
 
-    // Get audio URL
-    const audioUrl = await outputStorage.getUrl(job.audioPath);
-    
-    // Calculate expiration time (24 hours from now)
-    const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 24);
-
-    const response: ResultResponse = {
-      jobId: job.id,
-      status: job.status,
-      audioUrl: audioUrl,
-      script: job.script,
-      duration: job.options.duration * 60, // Convert minutes to seconds
-      expiresAt: expiresAt.toISOString()
-    };
-
-    return NextResponse.json(response);
+    // This endpoint should not be reached when using Convex
+    // Return error since we should be using Convex storage
+    return NextResponse.json(
+      { error: 'This endpoint is deprecated. Audio files are now served through Convex.' },
+      { status: 410 }
+    );
   } catch (error) {
     console.error('Get result error:', error);
     return NextResponse.json(

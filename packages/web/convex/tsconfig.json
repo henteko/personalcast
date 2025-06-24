@@ -1,0 +1,22 @@
+{
+  /* This TypeScript configuration is used by Convex when bundling functions */
+  "compilerOptions": {
+    /* These settings are not used by Convex and can be customized */
+    "allowJs": true,
+    "strict": true,
+    
+    /* These compiler options are required by Convex */
+    "target": "ESNext",
+    "lib": ["ES2021"],
+    "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "skipLibCheck": true,
+    "paths": {
+      "@/*": ["../*"]
+    }
+  },
+  "include": ["./**/*", "../**/*.ts", "../**/*.tsx"],
+  "exclude": ["./_generated"]
+}

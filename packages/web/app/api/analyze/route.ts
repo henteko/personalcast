@@ -2,12 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PersonalCast } from '@personalcast/core';
 import { AnalyzeRequest, GenerationStatus, JobResponse } from '@/lib/types/api';
 import { jobManager } from '@/lib/storage/JobManager';
-import { LocalStorageAdapter } from '@/lib/storage/LocalStorageAdapter';
 import path from 'path';
+import { createConvexJob, updateJobStatus, saveScriptData, recordJobError, completeJob } from '@/lib/convex/client';
+import type { Id } from '@/convex/_generated/dataModel';
+import { ConvexStorageAdapter } from '@/lib/storage/ConvexStorageAdapter';
+import { promises as fs } from 'fs';
 
-// Initialize storage adapters
-const tempStorage = new LocalStorageAdapter(process.env.LOCAL_TEMP_DIR || './temp');
-const outputStorage = new LocalStorageAdapter(process.env.LOCAL_OUTPUT_DIR || './output');
+// Initialize temp directory path
+const tempDir = process.env.LOCAL_TEMP_DIR || './temp';
 
 // Validation function
 function validateRequest(body: any): { valid: boolean; error?: string } {
@@ -56,21 +58,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create job
+    // Create job in Convex
+    const convexJobId = await createConvexJob(body.activityLog, new Date().toISOString());
+    
+    // Also create in local job manager for backward compatibility
     const job = jobManager.createJob(body.activityLog, body.options);
+    
+    // Store mapping between local and Convex job IDs
+    (global as any).jobIdMapping = (global as any).jobIdMapping || {};
+    (global as any).jobIdMapping[job.id] = convexJobId;
 
     // Start processing asynchronously
-    processJob(job.id).catch(error => {
+    processJob(job.id, convexJobId).catch(async error => {
       console.error('Job processing error:', error);
       jobManager.updateJob(job.id, {
         status: GenerationStatus.FAILED,
         error: error.message
       });
+      
+      // Also update Convex
+      await recordJobError(convexJobId, {
+        message: error.message,
+        code: 'PROCESSING_ERROR'
+      });
     });
 
-    // Return job response
+    // Return job response with Convex ID
     const response: JobResponse = {
-      jobId: job.id,
+      jobId: convexJobId as string,
       status: job.status,
       estimatedTime: job.estimatedTime
     };
@@ -86,17 +101,20 @@ export async function POST(request: NextRequest) {
 }
 
 // Process job asynchronously
-export async function processJob(jobId: string) {
-  const job = jobManager.getJob(jobId);
+export async function processJob(localJobId: string, convexJobId: Id<"jobs">) {
+  const job = jobManager.getJob(localJobId);
   if (!job) return;
 
   try {
     // Update status to parsing
-    jobManager.updateJob(jobId, {
+    jobManager.updateJob(localJobId, {
       status: GenerationStatus.PARSING,
       progress: 10,
       message: 'メモを解析中...'
     });
+    
+    // Update Convex
+    await updateJobStatus(convexJobId, 'parsing', 10, 'メモを解析中...');
 
     // Initialize PersonalCast with API key
     if (!process.env.GEMINI_API_KEY) {
@@ -107,25 +125,32 @@ export async function processJob(jobId: string) {
     const personalCast = new PersonalCast();
 
     // Parse memo - save to temp file first
-    const tempMemoPath = `${jobId}_memo.txt`;
-    await tempStorage.save(tempMemoPath, Buffer.from(job.activityLog, 'utf-8'));
-    const fullTempPath = path.resolve(process.env.LOCAL_TEMP_DIR || './temp', tempMemoPath);
+    const tempMemoPath = `${localJobId}_memo.txt`;
+    const fullTempPath = path.resolve(tempDir, tempMemoPath);
+    
+    // Ensure temp directory exists
+    await fs.mkdir(tempDir, { recursive: true });
+    await fs.writeFile(fullTempPath, job.activityLog, 'utf-8');
     
     const parsedMemo = await personalCast.parseMemoFile(fullTempPath);
 
     // Update status to analyzing
-    jobManager.updateJob(jobId, {
+    jobManager.updateJob(localJobId, {
       status: GenerationStatus.ANALYZING_MEMO,
       progress: 30,
       message: '活動を分析中...'
     });
+    
+    await updateJobStatus(convexJobId, 'analyzing_memo', 30, '活動を分析中...');
 
     // Generate script
-    jobManager.updateJob(jobId, {
+    jobManager.updateJob(localJobId, {
       status: GenerationStatus.GENERATING_SCRIPT,
       progress: 50,
       message: '台本を生成中...'
     });
+    
+    await updateJobStatus(convexJobId, 'generating_script', 50, '台本を生成中...');
 
     const script = await personalCast.generateScriptFromMemo(parsedMemo, {
       style: job.options.analysisStyle,
@@ -141,31 +166,42 @@ export async function processJob(jobId: string) {
       }))
     };
 
-    jobManager.updateJob(jobId, {
+    jobManager.updateJob(localJobId, {
       status: GenerationStatus.SCRIPT_READY,
       script: scriptData,
       progress: 60,
       message: '台本が完成しました',
       scriptAvailable: true
     });
+    
+    // Save script to Convex
+    await saveScriptData(convexJobId, {
+      sections: scriptData.sections,
+      title: scriptData.title,
+      summary: parsedMemo.summary || ''
+    });
 
     // Generate voice
-    jobManager.updateJob(jobId, {
+    jobManager.updateJob(localJobId, {
       status: GenerationStatus.SYNTHESIZING_VOICE,
       progress: 70,
       message: '音声を生成中...'
     });
+    
+    await updateJobStatus(convexJobId, 'synthesizing_voice', 70, '音声を生成中...');
 
     const audioBuffers = await personalCast.generateSpeechFromScript(script, {
       speed: job.options.speed
     });
 
     // Mix audio
-    jobManager.updateJob(jobId, {
+    jobManager.updateJob(localJobId, {
       status: GenerationStatus.MIXING_AUDIO,
       progress: 90,
       message: '音声を処理中...'
     });
+    
+    await updateJobStatus(convexJobId, 'mixing_audio', 90, '音声を処理中...');
 
     // Combine audio buffers
     const combinedAudio = await personalCast.combineAudioBuffers(audioBuffers);
@@ -174,36 +210,92 @@ export async function processJob(jobId: string) {
     const normalizedAudio = await personalCast.normalizeAudioVolume(combinedAudio);
 
     // Export to MP3
-    const finalOutputFileName = `${jobId}.mp3`;
-    const finalOutputPath = path.resolve(process.env.LOCAL_OUTPUT_DIR || './output', finalOutputFileName);
+    const finalOutputFileName = `${localJobId}.mp3`;
+    const outputDir = process.env.LOCAL_OUTPUT_DIR || './output';
+    const finalOutputPath = path.resolve(outputDir, finalOutputFileName);
+    
+    // Ensure output directory exists
+    await fs.mkdir(outputDir, { recursive: true });
     await personalCast.exportAudioToMP3(normalizedAudio, finalOutputPath);
     
     // Add BGM
-    jobManager.updateJob(jobId, {
+    jobManager.updateJob(localJobId, {
       progress: 95,
       message: 'BGMを追加中...'
     });
+    
+    await updateJobStatus(convexJobId, 'mixing_audio', 95, 'BGMを追加中...');
     
     const bgmPath = path.resolve(process.cwd(), 'public/audio/bgm.mp3');
     await personalCast.addBackgroundMusic(finalOutputPath, bgmPath);
     
     // Clean up temp files
-    await tempStorage.delete(tempMemoPath);
+    await fs.unlink(fullTempPath).catch(() => {});
+    
+    // Upload audio file to Convex
+    let audioUrl = '';
+    
+    if (process.env.NEXT_PUBLIC_CONVEX_URL) {
+      try {
+        const convexStorage = new ConvexStorageAdapter(process.env.NEXT_PUBLIC_CONVEX_URL);
+        
+        // Read the audio file
+        const audioData = await fs.readFile(finalOutputPath);
+        const audioBase64 = audioData.toString('base64');
+        
+        // Upload to Convex storage
+        const storageId = await convexStorage.uploadFile(
+          convexJobId,
+          audioBase64,
+          finalOutputFileName,
+          'audio/mpeg'
+        );
+        
+        // Save audio file info in Convex
+        await convexStorage.saveAudioFile(
+          convexJobId,
+          storageId,
+          finalOutputFileName,
+          'audio/mpeg',
+          audioData.length
+        );
+        
+        // Get Convex URL (this is set automatically by saveAudioFile)
+        const convexUrl = await convexStorage.getFileUrl(storageId);
+        if (convexUrl) {
+          audioUrl = convexUrl;
+        }
+      } catch (uploadError) {
+        console.error('Failed to upload audio to Convex:', uploadError);
+        throw new Error('音声ファイルのアップロードに失敗しました');
+      }
+    } else {
+      throw new Error('Convex URLが設定されていません');
+    }
 
     // Update job as completed
-    jobManager.updateJob(jobId, {
+    jobManager.updateJob(localJobId, {
       status: GenerationStatus.COMPLETED,
       audioPath: finalOutputFileName,
       progress: 100,
       message: '生成が完了しました'
     });
+    
+    // Complete Convex job with audio URL
+    await completeJob(convexJobId, audioUrl);
 
   } catch (error) {
     console.error('Job processing error:', error);
-    jobManager.updateJob(jobId, {
+    jobManager.updateJob(localJobId, {
       status: GenerationStatus.FAILED,
       error: error instanceof Error ? error.message : 'Unknown error',
       message: 'エラーが発生しました'
+    });
+    
+    // Record error in Convex
+    await recordJobError(convexJobId, {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      code: 'PROCESSING_ERROR'
     });
   }
 }

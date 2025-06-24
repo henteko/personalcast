@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GenerationStatus, JobResponse } from '@/lib/types/api';
 import { jobManager } from '@/lib/storage/JobManager';
+import { createConvexJob } from '@/lib/convex/client';
+import { ConvexStorageAdapter } from '@/lib/storage/ConvexStorageAdapter';
+import type { Id } from '@/convex/_generated/dataModel';
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,14 +55,40 @@ export async function POST(request: NextRequest) {
     // Read file content
     const content = await file.text();
 
-    // Create job with file content
+    // Create job in Convex
+    const convexJobId = await createConvexJob(content, new Date().toISOString());
+    
+    // Create local job for compatibility
     const job = jobManager.createJob(content, options);
+    
+    // Store mapping between local and Convex job IDs
+    (global as any).jobIdMapping = (global as any).jobIdMapping || {};
+    (global as any).jobIdMapping[job.id] = convexJobId;
+    
+    // Upload file to Convex storage if CONVEX_URL is set
+    if (process.env.NEXT_PUBLIC_CONVEX_URL) {
+      try {
+        const convexStorage = new ConvexStorageAdapter(process.env.NEXT_PUBLIC_CONVEX_URL);
+        const fileBuffer = await file.arrayBuffer();
+        const fileData = Buffer.from(fileBuffer).toString('base64');
+        
+        await convexStorage.uploadFile(
+          convexJobId,
+          fileData,
+          file.name,
+          file.type
+        );
+      } catch (uploadError) {
+        console.error('Convex file upload failed:', uploadError);
+        // Continue with local processing
+      }
+    }
 
     // Import the processing function
     const { processJob } = await import('../route');
     
     // Start processing asynchronously
-    processJob(job.id).catch(error => {
+    processJob(job.id, convexJobId).catch(async error => {
       console.error('Job processing error:', error);
       jobManager.updateJob(job.id, {
         status: GenerationStatus.FAILED,
@@ -67,9 +96,9 @@ export async function POST(request: NextRequest) {
       });
     });
 
-    // Return job response
+    // Return job response with Convex ID
     const response: JobResponse = {
-      jobId: job.id,
+      jobId: convexJobId as string,
       status: job.status,
       estimatedTime: job.estimatedTime
     };

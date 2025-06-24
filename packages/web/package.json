@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@personalcast/core": "file:../core",
+    "convex": "^1.24.8",
     "next": "15.3.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
