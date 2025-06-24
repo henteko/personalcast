@@ -4,18 +4,19 @@
 
 ## 🎯 プロジェクト概要
 
-PersonalCastは、日々のメモから2人のAIパーソナリティがユーザーの活動を分析・紹介するニュース番組を自動生成するツールです。CLIツールとWebアプリケーションの両方で利用可能です。
+PersonalCastは、日々のメモから2人のAIパーソナリティがユーザーの活動を客観的に分析・紹介するニュース番組を自動生成するツールです。CLIツールとWebアプリケーションの両方で利用可能です。
 
 ### 主な特徴
 - 📝 様々な形式のメモファイルに対応（.txt, .md, .json, .csv）
 - 🤖 Google Gemini API (@google/genai)による自然な対話台本生成
-- 🎙️ Gemini 2.5 Flash Preview TTSによる高品質な音声合成
+- 🎙️ Gemini 2.5 Flash Preview TTSによる高品質な音声合成（Zephyr、Charon等の音声プリセット対応）
 - 🎵 BGM追加機能（自動ダッキング、フェード処理対応）
 - ⚡ シンプルなCLIインターフェース
 - 🌐 Webアプリケーション対応（ブラウザから利用可能）
 - 🏗️ モノレポ構造による保守性の高い設計
 - 🔄 自動リトライ機能付きのAPI呼び出し
 - ✅ 入力検証とエラーハンドリング
+- 📊 客観的な活動分析とパターン認識
 
 ## 🏗️ アーキテクチャ
 
@@ -115,21 +116,21 @@ personalcast/
 ### CLIの設定ファイル (personalcast.config.json)
 ```json
 {
-  "radioShowName": "PersonalCast",
+  "radioShowName": "Today's You",
   "personalities": {
     "host1": {
       "name": "あかり",
-      "voiceName": "Kore",
-      "character": "優しくて励まし上手"
+      "voiceName": "Zephyr",
+      "character": "冷静で分析的なメインキャスター"
     },
     "host2": {
       "name": "けんた",
-      "voiceName": "Puck",
-      "character": "明るくて分析好き"
+      "voiceName": "Charon",
+      "character": "洞察力のあるコメンテーター"
     }
   },
   "praise": {
-    "style": "gentle",
+    "style": "analytical",
     "focusAreas": ["work", "learning", "health"]
   },
   "audio": {
@@ -214,11 +215,12 @@ npm run typecheck
 
 2. **台本生成**
    - Gemini APIにプロンプトを送信
-   - 設定されたラジオ番組名を使用
+   - 設定されたラジオ番組名を使用（デフォルト: "Today's You"）
    - 3つのセクション（オープニング、メイン、エンディング）で構成
+   - 客観的な分析と建設的なフィードバック
 
 3. **音声生成**
-   - 各パーソナリティの設定されたvoiceNameを使用
+   - 各パーソナリティの設定されたvoiceNameを使用（Zephyr、Charon等）
    - マルチスピーカー合成を試行、失敗時は個別合成
 
 4. **音声処理**
@@ -288,6 +290,11 @@ PersonalCastはモノレポ構造を採用しており、以下の利点があ�
 - **@personalcast/core**: 共有ライブラリ（Node.js環境）
 - **personalcast**: CLIアプリケーション（coreライブラリを使用）
 - **@personalcast/web**: Webアプリケーション（Next.js + coreライブラリ）
+
+### リポジトリ情報
+- **GitHubリポジトリ**: https://github.com/henteko/personalcast
+- **プロジェクト名**: PersonalCast
+- **ワークスペース名**: personalcast-monorepo
 
 ### 将来の拡張
 - **デスクトップアプリ**: ElectronでCLIをGUIラップ
