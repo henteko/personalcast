@@ -126,7 +126,7 @@ export class AddBgmCommand {
       fadeIn: options.fadeIn ?? 3,
       fadeOut: options.fadeOut ?? 3,
       intro: options.intro ?? 3,
-      outro: options.outro ?? 2,
+      outro: options.outro ?? 5,
     };
   }
 }

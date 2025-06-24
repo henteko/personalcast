@@ -242,7 +242,7 @@ export class FFmpegService {
       fadeIn = 3,
       fadeOut = 3,
       intro = 3,
-      outro = 2,
+      outro = 5,
     } = options;
 
     try {
@@ -259,7 +259,7 @@ export class FFmpegService {
         // Process each BGM section separately
         `[bgm1]atrim=0:${intro},volume=${bgmVolume},afade=t=in:st=0:d=${fadeIn}[bgm_intro]`,
         `[bgm2]atrim=${intro}:${audioDuration + intro},volume=${ducking}[bgm_main]`,
-        `[bgm3]atrim=${audioDuration + intro}:${totalDuration},volume=${bgmVolume},afade=t=out:st=${Math.max(0, outro - fadeOut)}:d=${Math.min(fadeOut, outro)}[bgm_outro]`,
+        `[bgm3]atrim=${audioDuration + intro}:${totalDuration},volume=${bgmVolume},afade=t=out:st=${audioDuration + intro}:d=${outro}[bgm_outro]`,
 
         // Delay voice to start after intro
         `[0:a]adelay=${intro * 1000}[voice_delayed]`,
