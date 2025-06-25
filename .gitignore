@@ -71,3 +71,5 @@ dist/
 
 !packages/web/public/audio/bgm.mp3
 !packages/web/public/audio/sample.mp3
+
+deploy.sh
