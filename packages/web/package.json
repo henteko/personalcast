@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --experimental-build-mode compile",
-    "start": "next start",
+    "build:production": "next build",
+    "start": "next start -p ${PORT:-3000}",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "jest --passWithNoTests"
