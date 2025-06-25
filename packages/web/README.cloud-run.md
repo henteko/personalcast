@@ -17,7 +17,26 @@ PORT=8080
 
 ## デプロイ方法
 
-### 1. 手動でのデプロイ
+### 1. Convex Production環境へのデプロイ
+
+Cloud Runにデプロイする前に、必ずConvexをproduction環境にデプロイする必要があります：
+
+```bash
+# packages/webディレクトリに移動
+cd packages/web
+
+# production環境にデプロイ
+npx convex deploy --yes
+```
+
+このコマンドにより以下が実行されます：
+- テーブル（jobs, audioFiles, memoFiles）とインデックスの作成
+- サーバー関数のデプロイ
+- production URLの確認
+
+重要: 初回デプロイ時はスキーマとインデックスが作成されるため、この手順を必ず実行してください。
+
+### 2. 手動でのデプロイ
 
 ```bash
 # プロジェクトルートから実行
@@ -78,3 +97,29 @@ gcloud run deploy personalcast-web \
 - メモリを1GBに増やす: `--memory 1Gi`
 - CPUを2に増やす: `--cpu 2`
 - 最小インスタンス数を1に設定してコールドスタートを回避: `--min-instances 1`
+
+### Convex関連のトラブルシューティング
+
+1. **「Server Error」が発生する場合**
+   - Convexがproduction環境にデプロイされているか確認
+   - `NEXT_PUBLIC_CONVEX_URL`が正しいproduction URLを指しているか確認
+   - `CONVEX_DEPLOY_KEY`が正しく設定されているか確認
+
+2. **テーブルが見つからないエラーが発生する場合**
+   ```bash
+   cd packages/web
+   npx convex deploy --yes
+   ```
+
+3. **環境変数の更新方法**
+   ```bash
+   # 特定の環境変数を更新
+   gcloud run services update personalcast-web \
+     --region asia-northeast1 \
+     --update-env-vars "CONVEX_DEPLOY_KEY=新しいデプロイキー"
+   
+   # 複数の環境変数を一度に更新
+   gcloud run services update personalcast-web \
+     --region asia-northeast1 \
+     --update-env-vars "GEMINI_API_KEY=新しいAPIキー,NEXT_PUBLIC_CONVEX_URL=新しいURL"
+   ```
