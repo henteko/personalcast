@@ -17,6 +17,7 @@ PersonalCastは、日々のメモから2人のAIパーソナリティがユー�
 - 🔄 自動リトライ機能付きのAPI呼び出し
 - ✅ 入力検証とエラーハンドリング
 - 📊 客観的な活動分析とパターン認識
+- 🔗 Convexによるリアルタイムデータ同期（Web版）
 
 ## 🏗️ アーキテクチャ
 
@@ -56,18 +57,26 @@ personalcast/
 │       │   │   ├── analyze/ # 分析API
 │       │   │   ├── jobs/    # ジョブ管理API
 │       │   │   └── files/   # ファイルサービング
+│       │   ├── generate/    # 生成ページ
 │       │   ├── jobs/[jobId]/ # ジョブ詳細ページ
-│       │   └── page.tsx     # ホームページ
+│       │   └── page.tsx     # ランディングページ
 │       ├── components/      # Reactコンポーネント
 │       │   ├── forms/       # フォームコンポーネント
-│       │   └── analysis/    # 分析関連コンポーネント
+│       │   ├── analysis/    # 分析関連コンポーネント
+│       │   └── landing/     # ランディングページコンポーネント
+│       ├── convex/          # Convexデータベース設定
+│       │   ├── schema.ts    # データスキーマ定義
+│       │   ├── jobs.ts      # ジョブ管理ミューテーション
+│       │   ├── files.ts     # ファイル管理
+│       │   └── actions.ts   # サーバーアクション
 │       ├── lib/             # ライブラリコード
-│       │   ├── storage/     # ストレージアダプター
+│       │   ├── constants/   # 定数定義
 │       │   └── types/       # TypeScript型定義
 │       ├── public/          # 静的ファイル
-│       │   └── audio/       # BGMファイル
+│       │   └── audio/       # BGM・サンプル音声ファイル
 │       └── package.json
-├── docs/                    # ドキュメント
+├── docs/                    # ドキュメント（GitHub Pages）
+│   └── index.html          # PersonalCast CLIランディングページ
 ├── .github/                 # GitHub Actions ワークフロー
 └── package.json             # ワークスペース設定
 ```
@@ -85,7 +94,7 @@ personalcast/
 
 #### 3. **ScriptGenerator**
 - Gemini APIを使用した台本生成
-- カスタマイズ可能なラジオ番組名（デフォルト: PersonalCast）
+- カスタマイズ可能なラジオ番組名（デフォルト: "Today's You"）
 - パーソナリティ設定に基づく対話生成
 
 #### 4. **GeminiVoiceGenerator**
@@ -106,10 +115,17 @@ personalcast/
 
 #### 7. **Webアプリケーション**
 - Next.js 15によるモダンなWebインターフェース
-- APIルートによる非同期処理
+- Convexによるリアルタイムデータ同期
 - リアルタイム進捗表示
 - ブラウザ内音声再生
 - レスポンシブデザイン
+- ランディングページとサンプル音声
+
+#### 8. **Convex統合** (Web版)
+- リアルタイムジョブステータス管理
+- クラウドファイルストレージ
+- 非同期処理とエラーハンドリング
+- 24時間後の自動クリーンアップ
 
 ## 🔧 設定システム
 
@@ -162,11 +178,11 @@ GEMINI_MODEL=gemini-2.5-flash  # モデルのオーバーライド
 # 必須
 GEMINI_API_KEY=your-gemini-api-key
 
-# ストレージ設定
-USE_CLOUD_STORAGE=false  # ローカル開発時
-USE_CLOUD_TASKS=false    # ローカル開発時
+# Convex
+NEXT_PUBLIC_CONVEX_URL=https://your-project.convex.cloud
+CONVEX_DEPLOY_KEY=your-deploy-key
 
-# ローカルディレクトリ
+# ローカルディレクトリ（開発時）
 LOCAL_TEMP_DIR=./temp
 LOCAL_OUTPUT_DIR=./output
 
@@ -197,6 +213,9 @@ npm run dev:cli
 # Webの開発モード（http://localhost:3000）
 npm run dev:web
 
+# Convexの開発モード
+npx convex dev
+
 # 全パッケージのテスト
 npm run test
 
@@ -209,25 +228,36 @@ npm run typecheck
 
 ## 🚀 処理フロー
 
-1. **入力解析**
+### Web版の処理フロー
+
+1. **ジョブ作成**
+   - ユーザーがメモを入力
+   - Convexでジョブレコードを作成
+   - リアルタイムでステータス更新
+
+2. **入力解析**
    - メモファイルを読み込み、ParsedMemo形式に変換
    - 日付、活動内容、ポジティブ要素を抽出
 
-2. **台本生成**
+3. **台本生成**
    - Gemini APIにプロンプトを送信
    - 設定されたラジオ番組名を使用（デフォルト: "Today's You"）
    - 3つのセクション（オープニング、メイン、エンディング）で構成
    - 客観的な分析と建設的なフィードバック
 
-3. **音声生成**
+4. **音声生成**
    - 各パーソナリティの設定されたvoiceNameを使用（Zephyr、Charon等）
    - マルチスピーカー合成を試行、失敗時は個別合成
 
-4. **音声処理**
+5. **音声処理**
    - FFmpegで音声を結合
    - 音量を正規化
-   - BGMを自動追加（Webアプリケーションの場合）
+   - BGMを自動追加
    - MP3形式でエクスポート
+
+6. **ファイル保存**
+   - Convexストレージに音声ファイルを保存
+   - URLを生成してジョブレコードに記録
 
 ## 📋 開発ガイドライン
 
@@ -262,12 +292,14 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 - APIキーは環境変数で管理
 - ローカルファイルのみ処理（ネットワーク経由のファイルは非対応）
 - 一時ファイルは処理後に自動削除
+- Convexによるセキュアなデータ管理
 
 ## ⚡ パフォーマンス最適化
 
 - 大きなメモファイル: ストリーミング処理を検討
 - 音声生成: 並列処理の活用
 - キャッシュ: 将来的な実装を検討
+- Convex: リアルタイム更新による効率的な状態管理
 
 ## 🤝 コントリビューション
 
@@ -289,17 +321,18 @@ PersonalCastはモノレポ構造を採用しており、以下の利点があ�
 ### パッケージ構成
 - **@personalcast/core**: 共有ライブラリ（Node.js環境）
 - **personalcast**: CLIアプリケーション（coreライブラリを使用）
-- **@personalcast/web**: Webアプリケーション（Next.js + coreライブラリ）
+- **@personalcast/web**: Webアプリケーション（Next.js + coreライブラリ + Convex）
 
 ### リポジトリ情報
 - **GitHubリポジトリ**: https://github.com/henteko/personalcast
 - **プロジェクト名**: PersonalCast
 - **ワークスペース名**: personalcast-monorepo
+- **CLIドキュメント**: https://henteko.github.io/personalcast/
 
 ### 将来の拡張
 - **デスクトップアプリ**: ElectronでCLIをGUIラップ
 - **モバイルアプリ**: React Native + API経由でcoreライブラリ使用
-- **クラウド対応**: Google Cloud Run でのホスティング
+- **クラウド対応**: Vercel + Convexによるスケーラブルなホスティング
 
 ## 📊 今後の拡張可能性
 
@@ -309,5 +342,6 @@ PersonalCastはモノレポ構造を採用しており、以下の利点があ�
 - バッチ処理機能
 - リアルタイム音声ストリーミング
 - デスクトップ・モバイル版の開発
-- Google Cloud Run でのホスティング対応
 - ユーザー認証とデータ管理機能
+- ソーシャル機能（生成した番組の共有）
+- 統計ダッシュボード

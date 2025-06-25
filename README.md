@@ -45,16 +45,11 @@ Windows:
 
 PersonalCastはモノレポ構造で開発されており、CLIツールとして利用できます。
 
-### 必要な環境
-- Node.js 18以上
-- npm 8以上
-- FFmpeg（音声処理に必要）
-
 ### インストール手順
 
 リポジトリをクローン：
 ```bash
-git clone https://github.com/henteko/cheercast.git personalcast
+git clone https://github.com/henteko/personalcast.git
 cd personalcast
 ```
 
@@ -99,12 +94,12 @@ GEMINI_API_KEY=your-api-key-here
   "personalities": {
     "host1": {
       "name": "あかり",
-      "voiceName": "Kore",
+      "voiceName": "Zephyr",
       "character": "冷静で分析的なメインキャスター"
     },
     "host2": {
       "name": "けんた",
-      "voiceName": "Puck",
+      "voiceName": "Charon",
       "character": "洞察力のあるコメンテーター"
     }
   },
@@ -115,6 +110,10 @@ GEMINI_API_KEY=your-api-key-here
   "audio": {
     "duration": 10,
     "speed": 1.0
+  },
+  "gemini": {
+    "model": "gemini-2.5-flash",
+    "temperature": 0.7
   }
 }
 ```
@@ -152,7 +151,6 @@ personalcast generate [options]
 ```bash
 personalcast generate -i today.txt -o today_news.mp3
 ```
-
 
 #### BGM付きニュース生成
 ```bash
@@ -248,7 +246,7 @@ PersonalCastが生成するニュース番組は以下の構成になってい�
 
 ```bash
 # リポジトリをクローン
-git clone https://github.com/henteko/cheercast.git personalcast
+git clone https://github.com/henteko/personalcast.git
 cd personalcast
 
 # 依存関係をインストール
@@ -259,9 +257,6 @@ npm run build
 
 # CLIの開発モードで実行
 npm run dev:cli
-
-# Webアプリの開発サーバー起動
-npm run dev:web
 
 # テストを実行
 npm run test
@@ -302,11 +297,12 @@ personalcast/
 │   │   │   ├── services/ # 外部サービス連携
 │   │   │   └── utils/    # ユーティリティ
 │   │   └── dist/     # ビルド済みファイル
-│   └── cli/          # CLIアプリケーション (personalcast)
-│       ├── src/
-│       │   ├── commands/ # CLIコマンド実装
-│       │   └── index.ts  # エントリーポイント
-│       └── dist/     # ビルド済みファイル
+│   ├── cli/          # CLIアプリケーション (personalcast)
+│   │   ├── src/
+│   │   │   ├── commands/ # CLIコマンド実装
+│   │   │   └── index.ts  # エントリーポイント
+│   │   └── dist/     # ビルド済みファイル
+│   └── web/          # Webアプリケーション
 ├── docs/             # ドキュメント
 └── .github/          # GitHub Actions ワークフロー
 ```
@@ -331,8 +327,8 @@ personalcast/
 
 ## 📮 お問い合わせ
 
-- Issue: [GitHub Issues](https://github.com/henteko/cheercast/issues)
-- Discussion: [GitHub Discussions](https://github.com/henteko/cheercast/discussions)
+- Issue: [GitHub Issues](https://github.com/henteko/personalcast/issues)
+- Discussion: [GitHub Discussions](https://github.com/henteko/personalcast/discussions)
 
 ---
 
