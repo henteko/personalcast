@@ -195,7 +195,7 @@ export default function JobPage({ params }: { params: Promise<{ jobId: string }>
         <div className="container mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-3xl md:text-5xl font-bold text-primary-blue mb-4">
-              {jobData.status === GenerationStatus.COMPLETED ? '音声レポートが完成しました' : 'PersonalCast生成中'}
+              PersonalCast
             </h1>
             <p className="text-lg md:text-xl text-text-secondary">
               {getHeaderMessage()}
