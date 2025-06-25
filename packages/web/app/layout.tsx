@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "PersonalCast - AIが紡ぐあなたの一日",
     description: "日々の活動を分析し、AIパーソナリティがニュース番組形式でお届けする音声レポートサービス",
-    images: ["/ogp.jpg"],
+    images: ["https://personalcast.henteko07.com/ogp.jpg"],
     locale: "ja_JP",
     type: "website",
   },
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "PersonalCast - AIが紡ぐあなたの一日",
     description: "日々の活動を分析し、AIパーソナリティがニュース番組形式でお届けする音声レポートサービス",
-    images: ["/ogp.jpg"],
+    images: ["https://personalcast.henteko07.com/ogp.jpg"],
   },
 };
 
