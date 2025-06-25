@@ -15,6 +15,19 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "PersonalCast - AIが紡ぐあなたの一日",
   description: "日々の活動を分析し、AIパーソナリティがニュース番組形式でお届けする音声レポートサービス",
+  openGraph: {
+    title: "PersonalCast - AIが紡ぐあなたの一日",
+    description: "日々の活動を分析し、AIパーソナリティがニュース番組形式でお届けする音声レポートサービス",
+    images: ["/ogp.jpg"],
+    locale: "ja_JP",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PersonalCast - AIが紡ぐあなたの一日",
+    description: "日々の活動を分析し、AIパーソナリティがニュース番組形式でお届けする音声レポートサービス",
+    images: ["/ogp.jpg"],
+  },
 };
 
 export default function RootLayout({
