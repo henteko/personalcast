@@ -8,8 +8,7 @@ export function ConvexClientProvider({ children }: { children: ReactNode }) {
     const url = process.env.NEXT_PUBLIC_CONVEX_URL;
     if (!url) {
       console.warn("NEXT_PUBLIC_CONVEX_URL is not set");
-      // ダミーのURLを使用（ビルド時のみ）
-      return new ConvexReactClient("https://dummy.convex.cloud");
+      return new ConvexReactClient("https://different-akita-170.convex.cloud");
     }
     return new ConvexReactClient(url);
   }, []);
