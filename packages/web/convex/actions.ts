@@ -98,21 +98,23 @@ export const processFileUpload = action({
 });
 
 // 古いジョブとファイルのクリーンアップ
-export const cleanupOldJobsAndFiles = action({
-  handler: async (ctx) => {
-    try {
-      // 24時間以上前のジョブを取得
-      const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
-      
-      // 古いジョブのクリーンアップを実行
-      const deletedCount = await ctx.runMutation(api.jobs.cleanupOldJobs);
-      
-      console.log(`${deletedCount}個の古いジョブを削除しました`);
-      
-      return deletedCount;
-    } catch (error) {
-      console.error("クリーンアップエラー:", error);
-      throw error;
-    }
-  },
-});
+// TODO: 循環参照を解決するため、一時的にコメントアウト
+// export const cleanupOldJobsAndFiles = action({
+//   args: {},
+//   handler: async (ctx) => {
+//     try {
+//       // 24時間以上前のジョブを取得
+//       const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
+//       
+//       // 古いジョブのクリーンアップを実行
+//       const deletedCount = await ctx.runMutation(api.jobs.cleanupOldJobs);
+//       
+//       console.log(`${deletedCount}個の古いジョブを削除しました`);
+//       
+//       return deletedCount;
+//     } catch (error) {
+//       console.error("クリーンアップエラー:", error);
+//       throw error;
+//     }
+//   },
+// });

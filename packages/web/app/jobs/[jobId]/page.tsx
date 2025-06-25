@@ -8,6 +8,9 @@ import { ScriptDisplay } from '@/components/analysis/ScriptDisplay';
 import { AudioPlayer } from '@/components/analysis/AudioPlayer';
 import type { Id } from '@/convex/_generated/dataModel';
 
+// 動的レンダリングを強制
+export const dynamic = 'force-dynamic';
+
 export default function JobPage({ params }: { params: Promise<{ jobId: string }> }) {
   const router = useRouter();
   const [jobId, setJobId] = useState<string | null>(null);

@@ -6,6 +6,9 @@ import Link from 'next/link';
 import { ActivityForm } from '@/components/forms/ActivityForm';
 import { GenerationOptions } from '@/lib/types/api';
 
+// 動的レンダリングを強制
+export const dynamic = 'force-dynamic';
+
 export default function GeneratePage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);

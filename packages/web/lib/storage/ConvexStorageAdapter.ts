@@ -10,14 +10,15 @@ export class ConvexStorageAdapter implements StorageAdapter {
     this.convex = new ConvexHttpClient(convexUrl);
   }
   
-  async save(path: string, content: Buffer): Promise<void> {
+  async save(path: string, data: Buffer): Promise<string> {
     // Convexでは直接ファイルパスベースの保存は行わない
     // 代わりにジョブIDとの紐付けで管理
     console.log(`ConvexStorageAdapter: save called for path ${path}`);
     // 実際の保存はactions.tsのprocessFileUploadで処理
+    return path; // 仮の実装: pathを返す
   }
   
-  async read(path: string): Promise<Buffer> {
+  async load(path: string): Promise<Buffer> {
     // Convexでは直接ストレージIDが必要なため、
     // pathからstorageIdを解決する必要があります
     throw new Error("ConvexStorageAdapter: Direct file read not supported. Use getFileUrl instead.");
@@ -37,6 +38,11 @@ export class ConvexStorageAdapter implements StorageAdapter {
   async list(prefix?: string): Promise<string[]> {
     // Convexではジョブベースでファイルを管理
     return [];
+  }
+  
+  async getUrl(path: string): Promise<string> {
+    // Convexでは直接的なURL取得は非対応
+    throw new Error("ConvexStorageAdapter: Direct URL generation not supported. Use getFileUrl with storageId instead.");
   }
   
   // Convex固有のメソッド
@@ -85,6 +91,7 @@ export class ConvexStorageAdapter implements StorageAdapter {
   }
   
   async cleanupOldJobs(): Promise<void> {
-    await this.convex.action(api.actions.cleanupOldJobsAndFiles);
+    // TODO: cleanupOldJobsAndFiles が修正されたら有効化
+    // await this.convex.action(api.actions.cleanupOldJobsAndFiles);
   }
 }

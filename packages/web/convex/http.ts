@@ -29,11 +29,8 @@ const uploadFile = httpAction(async (ctx, request) => {
       );
     }
     
-    // ファイルをBlobとして読み込み
-    const blob = await file.blob();
-    
-    // Convexストレージに保存
-    const storageId = await ctx.storage.store(blob);
+    // Fileオブジェクトを直接Convexストレージに保存
+    const storageId = await ctx.storage.store(file);
     
     // ファイル情報をデータベースに記録
     await ctx.runMutation(api.files.uploadMemoFile, {

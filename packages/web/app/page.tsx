@@ -3,6 +3,9 @@
 import { useRouter } from 'next/navigation';
 import { SampleSection } from '@/components/landing/SampleSection';
 
+// 動的レンダリングを強制
+export const dynamic = 'force-dynamic';
+
 export default function HomePage() {
   const router = useRouter();
 

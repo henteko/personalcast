@@ -33,7 +33,7 @@ export function ConvexProgressDisplay({ jobId }: ConvexProgressDisplayProps) {
         <div>
           <div className="flex justify-between mb-2">
             <span className="text-sm font-medium text-text-primary">
-              {STATUS_LABELS[job.status] || job.status}
+              {STATUS_LABELS[job.status as JobStatus] || job.status}
             </span>
             <span className="text-sm text-text-secondary">{job.progress}%</span>
           </div>
