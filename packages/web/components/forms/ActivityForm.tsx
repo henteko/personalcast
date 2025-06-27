@@ -71,7 +71,7 @@ export function ActivityForm({ onSubmit, isLoading = false }: ActivityFormProps)
           <label className="cursor-pointer text-sm text-primary-blue hover:text-primary-light-blue">
             <input
               type="file"
-              accept=".txt,.md,.json,.csv"
+              accept=".txt,.md"
               onChange={handleFileChange}
               className="hidden"
               disabled={isLoading}
