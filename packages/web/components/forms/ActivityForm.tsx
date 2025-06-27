@@ -26,18 +26,17 @@ const TEMPLATE_TEXT = `【業務活動】
 
 export function ActivityForm({ onSubmit, isLoading = false }: ActivityFormProps) {
   const [activityLog, setActivityLog] = useState('');
-  const [options, setOptions] = useState<GenerationOptions>({
+  const defaultOptions: GenerationOptions = {
     analysisStyle: 'analytical',
     duration: 5,
     speed: 1.0,
     newsShowName: 'PersonalCast'
-  });
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (activityLog.trim()) {
-      onSubmit(activityLog, options);
+      onSubmit(activityLog, defaultOptions);
     }
   };
 
@@ -79,88 +78,6 @@ export function ActivityForm({ onSubmit, isLoading = false }: ActivityFormProps)
             ファイルをアップロード
           </label>
         </div>
-      </div>
-
-      <div>
-        <button
-          type="button"
-          onClick={() => setShowAdvanced(!showAdvanced)}
-          className="text-sm text-primary-blue hover:text-primary-light-blue flex items-center gap-2 cursor-pointer"
-        >
-          詳細オプション
-          <svg
-            className={`w-4 h-4 transition-transform ${showAdvanced ? 'rotate-180' : ''}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-        
-        {showAdvanced && (
-          <div className="mt-4 space-y-4 p-4 bg-gray-50 rounded-lg">
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
-                分析スタイル
-              </label>
-              <select
-                value={options.analysisStyle}
-                onChange={(e) => setOptions({ ...options, analysisStyle: e.target.value as 'analytical' | 'comprehensive' })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-blue focus:border-transparent"
-                disabled={isLoading}
-              >
-                <option value="analytical">分析的（データ重視）</option>
-                <option value="comprehensive">包括的（詳細な説明）</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
-                番組の長さ: {options.duration}分
-              </label>
-              <input
-                type="range"
-                min="1"
-                max="10"
-                value={options.duration}
-                onChange={(e) => setOptions({ ...options, duration: parseInt(e.target.value) })}
-                className="w-full"
-                disabled={isLoading}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
-                音声速度: {options.speed}x
-              </label>
-              <input
-                type="range"
-                min="0.5"
-                max="2"
-                step="0.1"
-                value={options.speed}
-                onChange={(e) => setOptions({ ...options, speed: parseFloat(e.target.value) })}
-                className="w-full"
-                disabled={isLoading}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
-                番組名
-              </label>
-              <input
-                type="text"
-                value={options.newsShowName}
-                onChange={(e) => setOptions({ ...options, newsShowName: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-blue focus:border-transparent"
-                placeholder="PersonalCast"
-                disabled={isLoading}
-              />
-            </div>
-          </div>
-        )}
       </div>
 
       <button
